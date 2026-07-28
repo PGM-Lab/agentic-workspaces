@@ -23,7 +23,13 @@ python3 <path-to-skill>/scripts/audit.py --root <workspace>
 
    It reports missing contract files, leftover `{placeholders}` and `TODO`
    markers, and `STATUS.md` files older than the staleness threshold. Pass
-   `--json` when another tool will consume the output.
+   `--json` when another tool will consume the output, and `--max-depth` if
+   your units live deeper than three levels below the workspace root.
+
+   It also lists folders with a `README.md` but no `STATUS.md`, as
+   "possibly unactivated". That list needs judgement: from the files alone a
+   half-activated unit is indistinguishable from a container folder or a
+   working subfolder that happens to document itself.
 
 2. Read the flagged files. The script finds candidates; deciding whether
    something is a real problem needs judgement, and the script has none.
@@ -65,3 +71,10 @@ python3 <path-to-skill>/scripts/audit.py --root <workspace>
   deviation: it may be documented and intentional.
 - Do not open confidential material in bulk to audit it. Structure can be
   checked from filenames and headers.
+- **The coverage number is not the adoption number.** The script only sees
+  folders that already have at least one contract file. Work that was moved
+  into place but never given any documentation at all is invisible to it, and
+  during adoption that is usually the largest group. If the workspace keeps a
+  separate inventory of what exists versus what is activated, that inventory
+  is the honest denominator, and the audit only checks the folders that have
+  started.
