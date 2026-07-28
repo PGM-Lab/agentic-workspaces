@@ -1,0 +1,88 @@
+# Agentic Workspaces
+
+A way to organize your working life in plain text so that an AI agent can open
+a session in any folder, understand where it is and get to work.
+
+No new app, no database, no lock-in. Markdown files in folders, plus two small
+conventions that agents already understand: `AGENTS.md` for instructions and
+`SKILL.md` for repeatable procedures. It works with Claude Code, Codex, Cursor
+and anything else that reads those standards.
+
+This repository holds the method, the templates and the skills that operate
+it. It is meant to be copied and adapted, not installed.
+
+## The shape of it
+
+Your work is split into **workspaces**, one per role or area of
+responsibility. Inside a workspace, every **unit** of work (a project, a
+course, a client, a person you supervise) is a folder with three files:
+
+| File | Question it answers | Update rule |
+|---|---|---|
+| `README.md` | What is this and who is involved? | Rarely. Stable facts only. |
+| `STATUS.md` | Where is it right now, and what is the next action? | Overwritten. |
+| `LOG.md` | What was decided, when, and why? | Append-only. |
+
+That is the whole contract. An agent reads those three files and knows as much
+as you do about the unit.
+
+Two more files make it work for agents:
+
+- `AGENTS.md` at the workspace root holds the instructions: how the workspace
+  is organized, what the rules are, what must never leave the folder.
+- `CLAUDE.md` next to it is one line, `@AGENTS.md`, because Claude Code does
+  not read `AGENTS.md` directly. Every other agent reads the canonical file.
+
+Repeatable procedures live as skills, so "create a new project" or "close the
+session properly" is one instruction instead of a paragraph you retype.
+
+## Why bother
+
+Agents remember nothing between sessions. Left alone they re-derive your
+context every time, badly. The fix is not a bigger prompt, it is writing the
+context down where the agent can find it, in the folder the work already lives
+in.
+
+The side effect is the real prize: the same files that make an agent useful
+make the work legible to you six months later, and to a colleague who takes
+over.
+
+The reasoning behind each design choice, with references to the standards and
+practices it borrows from, is in [`docs/the-method.md`](docs/the-method.md).
+
+## Getting started
+
+Read [`docs/getting-started.md`](docs/getting-started.md). The short version:
+
+1. Pick one area of your work. Not all of it.
+2. Copy `templates/workspace/` to a new folder and fill in the `AGENTS.md`.
+3. Copy `skills/` into your agent's skills directory.
+4. Create one unit with the `new-unit` skill and use it for a week.
+5. Add a second workspace only once the first one has proven itself.
+
+Adopting this in one weekend across everything you do is the most common way
+to end up with forty folders full of unfilled templates. Start with one.
+
+## What is in here
+
+```
+docs/          The method and the rationale, plus a setup guide
+templates/     Every file in the contract, ready to copy
+skills/        The four skills that operate the structure
+examples/      A small worked workspace, filled in, to read before you start
+```
+
+## Status and feedback
+
+This is a working system, not a finished product. It is in daily use across
+seven workspaces and it is still changing. Known weak points are listed at the
+end of [`docs/the-method.md`](docs/the-method.md), and the honest one is that
+the contract only holds if you close sessions properly.
+
+If you try it and something does not fit your work, that is useful to hear.
+Open an issue. [`CONTRIBUTING.md`](CONTRIBUTING.md) says what kind of feedback
+helps most.
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).
