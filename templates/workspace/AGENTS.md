@@ -67,16 +67,17 @@ subfolders inside a unit.
 
 ## Skills
 
-This workspace's skills live in `.claude/skills/`. Claude Code loads them
-automatically from their `description`; **other agents do not auto-discover
-them, so when a task matches, read and follow the named `SKILL.md`
-directly:**
+{List every skill an agent needs in this workspace, wherever it is
+installed. Skills that belong to this workspace alone live as real folders
+under `.claude/skills/`. Claude Code discovers those on its own; other
+agents do not, so this list is what lets any agent be told to read and
+follow the named `SKILL.md`.}
 
-- **{skill-name}** (`.claude/skills/{skill-name}/SKILL.md`) — {one-line
-  trigger: when this skill applies}
+- **{skill-name}** (`.claude/skills/{skill-name}/SKILL.md`, or "installed
+  globally") — {one-line trigger: when this skill applies}
 
-Personal, cross-workspace skills live in the agent's own skills directory and
-are already shared; only workspace-specific skills belong here.
+Cross-workspace skills stay in the agent's own skills directory; only
+workspace-specific skills belong in the workspace.
 
 ## Done means
 

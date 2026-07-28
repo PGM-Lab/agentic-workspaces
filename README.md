@@ -3,9 +3,9 @@
 A way to organize your working life in plain text so that an AI agent can open
 a session in any folder, understand where it is and get to work.
 
-No new app, no database, no lock-in. Markdown files in folders, plus two small
-conventions that agents already understand: `AGENTS.md` for instructions and
-`SKILL.md` for repeatable procedures. It works with Claude Code, Codex, Cursor
+There is no app to adopt and no database to migrate into. Markdown files in
+folders, plus two small conventions that agents already understand:
+`AGENTS.md` for instructions and `SKILL.md` for repeatable procedures. It works with Claude Code, Codex, Cursor
 and anything else that reads those standards.
 
 This repository holds the method, the templates and the skills that operate
@@ -30,8 +30,9 @@ Two more files make it work for agents:
 
 - `AGENTS.md` at the workspace root holds the instructions: how the workspace
   is organized, what the rules are, what must never leave the folder.
-- `CLAUDE.md` next to it is one line, `@AGENTS.md`, because Claude Code does
-  not read `AGENTS.md` directly. Every other agent reads the canonical file.
+- `CLAUDE.md` next to it does nothing but import that file (`@AGENTS.md`),
+  because Claude Code does not read `AGENTS.md` directly. Every other agent
+  reads the canonical file.
 
 Repeatable procedures live as skills, so "create a new project" or "close the
 session properly" is one instruction instead of a paragraph you retype.
@@ -43,9 +44,9 @@ context every time, badly. The fix is not a bigger prompt, it is writing the
 context down where the agent can find it, in the folder the work already lives
 in.
 
-The side effect is the real prize: the same files that make an agent useful
-make the work legible to you six months later, and to a colleague who takes
-over.
+The side effect may matter even more: the same files that make an agent
+useful make the work legible to you six months later, and to a colleague who
+takes over.
 
 The reasoning behind each design choice, with references to the standards and
 practices it borrows from, is in [`docs/the-method.md`](docs/the-method.md).
@@ -75,7 +76,7 @@ examples/      A small worked workspace, filled in, to read before you start
 ## Status and feedback
 
 This is a working system, not a finished product. It is in daily use across
-seven workspaces and it is still changing. Known weak points are listed at the
+eight workspaces and it is still changing. Known weak points are listed at the
 end of [`docs/the-method.md`](docs/the-method.md), and the honest one is that
 the contract only holds if you close sessions properly.
 

@@ -1,7 +1,7 @@
 # Mira Lindqvist
 
 **Role / context:** WP2 lead in NORDBLUE, coauthor on the compound-event paper
-**Institution:** Institute of Marine Research (fictional)
+**Institution:** Nordsund Marine Institute (fictional)
 **Working language:** English
 **Active threads:** `../projects/2026-coastal-erosion` (modelling section and
 sensitivity analysis), `../areas/nordblue-consortium` (WP2)

@@ -50,7 +50,10 @@ whole semester is archived at once.
 Whichever you choose, add these:
 
 - `areas/` for standing responsibilities with no end date.
-- `resources/` for templates and reusable material.
+- `resources/` for templates and reusable material. It can start empty: the
+  `new-unit` skill carries a bundled copy of the unit templates and uses it
+  whenever the workspace has no `resources/templates/`. Copy the bundle in
+  the day you want to customize a template.
 - `archive/` for finished work. Searchable, not curated. Nothing here needs
   the contract applied retroactively.
 - `inbox/` only if you actually have unclassified material arriving. It should
@@ -61,20 +64,21 @@ work earns a folder the day it happens for real.
 
 ## 4. Install the skills
 
-Copy the contents of `skills/` into your agent's skills directory:
+Copy the skill folders into your agent's skills directory:
 
 ```bash
-cp -r skills/* ~/.claude/skills/
+cp -r skills/*/ ~/.claude/skills/
 ```
 
-For Codex the directory is `~/.codex/skills/`. If you use both agents, keep
-one canonical copy somewhere and symlink it into each, so you are not
-maintaining two versions. Note that symlinks do not survive cloud sync, so the
-canonical copy belongs on local disk.
+Codex reads `~/.agents/skills/` natively. If you use both agents, keep the
+canonical copy in `~/.agents/skills/` and symlink it into `~/.claude/skills/`,
+so you are not maintaining two versions. Note that symlinks do not survive
+cloud sync, so the canonical copy belongs on local disk.
 
-Then open `skills/new-unit/SKILL.md` and edit the kinds list to match the
-folders you chose in step 3. It ships with generic ones (`project`, `area`,
-`person`) and it is meant to be edited.
+Then edit the `KINDS` table at the top of
+`skills/new-unit/scripts/new_unit.py` to match the folders you chose in
+step 3 (its `SKILL.md` explains the mapping). It ships with generic kinds
+(`project`, `area`, `person`) and it is meant to be edited.
 
 Finally, list your skills in the workspace `AGENTS.md`, under `## Skills`,
 each with its path and a one-line trigger. Claude Code discovers skills on its
@@ -90,10 +94,13 @@ the script directly:
 python3 ~/.claude/skills/new-unit/scripts/new_unit.py "Name of the thing" --type project --root .
 ```
 
-Then fill in the three files by hand, once, properly. Not with placeholder
-text. This first unit is the example every later one gets modelled on, and it
-is also how you find out whether your `README.md` template is asking for the
-right things.
+The first run will note it is using the skill's bundled templates; that is
+expected until you customize your own.
+
+Then fill in the three files with real content, not placeholder text. This
+first unit is the example every later one gets modelled on, and it is also
+how you find out whether your `README.md` template is asking for the right
+things.
 
 Work in that folder for a week. At the end of each session, tell the agent to
 close the session, or invoke `session-log` by name.

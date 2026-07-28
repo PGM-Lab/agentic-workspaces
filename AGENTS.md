@@ -25,6 +25,9 @@ not a workspace itself.
   argument or infer it. A skill that only works on one person's laptop does
   not belong here.
 - **Documentation is in English**, including examples and template comments.
+  One deliberate exception: skill descriptions and trigger examples mix in
+  Spanish phrases, because triggers must match what the intended adopters
+  actually type, and they work in both languages.
 - **Prose style: plain and short.** No em dashes in running text, no
   three-item lists used for rhythm, no marketing register. The reader is a
   colleague deciding whether to adopt this, not an audience.
@@ -34,6 +37,9 @@ not a workspace itself.
 
 ## Before committing
 
+- Run `tests/smoke.sh`. It walks docs/getting-started.md end to end against a
+  scratch workspace and fails if the three template copies (`templates/`, the
+  `new-unit` bundle, the example workspace) drift.
 - Check that no absolute path from a real machine leaked into a doc or skill.
 - Check that `docs/the-method.md` and `README.md` still agree. They describe
   the same thing at different lengths and drift easily.

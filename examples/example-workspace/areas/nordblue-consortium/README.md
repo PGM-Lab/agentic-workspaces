@@ -3,7 +3,7 @@
 **What:** work package 3 lead in the NORDBLUE coastal resilience consortium
 **Since:** 2025-11-03
 **Cadence:** monthly partner call, first Tuesday. Annual report due each January.
-**Key people:** consortium coordinator at NIVA, WP2 lead Mira Lindqvist
+**Key people:** the consortium coordinator (Fjordvik Institute), WP2 lead Mira Lindqvist
 
 Standing responsibility for as long as the consortium runs (through 2028).
 Covers the partner calls, the reporting, and the data-sharing agreement.

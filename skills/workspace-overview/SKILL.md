@@ -1,6 +1,6 @@
 ---
 name: workspace-overview
-description: Generate a single overview board of everything pending across all workspaces by scanning their STATUS.md files — upcoming deadlines, blocked items, active work, stale entries. Works from any session regardless of the current directory. Use when the user asks "what's pending", "qué tengo pendiente", "overview", "dashboard", "tablero", "what deadlines are coming", "estado de todo", "what's on this week", or on a scheduled weekly run.
+description: Generate a single overview board of everything pending across all workspaces by scanning their STATUS.md files: upcoming deadlines, blocked items, active work, stale entries. Works from any session regardless of the current directory. Use when the user asks "what's pending", "qué tengo pendiente", "overview", "dashboard", "tablero", "what deadlines are coming", "estado de todo", "what's on this week", or on a scheduled weekly run.
 ---
 
 # Workspace Overview

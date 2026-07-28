@@ -12,19 +12,19 @@ be domain work.
 
 ## Installing
 
-Copy the folders into your agent's skills directory:
+Copy the skill folders into your agent's skills directory:
 
 ```bash
-cp -r skills/* ~/.claude/skills/
+cp -r skills/*/ ~/.claude/skills/
 ```
 
-Codex uses `~/.codex/skills/`. Both read the same `SKILL.md` format, so the
-same folder works in either.
+Codex reads `~/.agents/skills/` natively. Both agents read the same
+`SKILL.md` format, so the same folder works in either.
 
-If you use more than one agent, keep one canonical copy on local disk and
-symlink it into each agent's directory, rather than maintaining two versions.
-Symlinks do not survive cloud sync, so the canonical copy must not live in a
-synced folder.
+If you use more than one agent, keep the canonical copy in
+`~/.agents/skills/` on local disk and symlink it into the other agents'
+directories, rather than maintaining two versions. Symlinks do not survive
+cloud sync, so the canonical copy must not live in a synced folder.
 
 ## Global versus workspace-local
 
@@ -39,7 +39,8 @@ told to read and follow the file. Every agent reads `AGENTS.md`.
 
 ## Before you use these
 
-`new-unit` ships with generic kinds (`project`, `area`, `person`) and
-`workspace-overview` ships with no roots configured. Both say so at the top of
-their `SKILL.md`. Edit them to match your setup; they are meant to be adapted,
-not used as-is.
+`new-unit` ships with generic kinds (`project`, `area`, `person`) and with a
+bundled copy of the unit templates, used whenever the workspace has no
+`resources/templates/` of its own. `workspace-overview` ships with no roots
+configured. Both say so at the top of their `SKILL.md`. Edit them to match
+your setup; they are meant to be adapted, not used as-is.

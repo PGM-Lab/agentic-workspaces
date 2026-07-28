@@ -1,6 +1,6 @@
 ---
 name: new-unit
-description: Create a new unit of work in a workspace from the standard templates — a project, a standing area, or a person note — so it starts with the README/STATUS/LOG contract already in place. Use whenever the user starts something that has no folder yet: "empiezo un proyecto", "I'm starting X", "we won the contract", "I'm taking on Y", "add a note about Z", or when discussing work that turns out to have nowhere to live.
+description: Create a new unit of work in a workspace from the standard templates (a project, a standing area, or a person note) so it starts with the README/STATUS/LOG contract already in place. Use whenever the user starts something that has no folder yet: "empiezo un proyecto", "I'm starting X", "we won the contract", "I'm taking on Y", "add a note about Z", or when discussing work that turns out to have nowhere to live.
 ---
 
 # New Unit
@@ -22,8 +22,14 @@ top-level folders. It ships with three generic kinds:
 
 A research workspace would replace these with `paper`, `grant`, `application`,
 `review`, `student`. A consultancy might use `client`, `engagement`,
-`proposal`. Add a matching README variant in `resources/templates/` for each
-kind you add.
+`proposal`. Add a matching README variant to the templates for each kind you
+add.
+
+Templates come from the workspace's `resources/templates/` when it exists.
+When it does not, the script falls back to the copy bundled with this skill
+(`templates/` next to it), so the skill works in a fresh workspace with no
+setup. To customize, copy the bundle to `<workspace>/resources/templates/`
+and edit there; the workspace copy then takes precedence.
 
 ## Workflow
 
@@ -41,9 +47,10 @@ python3 <path-to-skill>/scripts/new_unit.py "Name of the thing" --type project -
    templates, and substitutes the name and today's date.
 
 3. **Fill in the placeholders** with real content from the conversation. Do
-   not leave `{curly braces}` or `TODO: describe this` behind: a template
-   satisfied without being filled in is worse than an absent file, because it
-   looks answered.
+   not leave `{curly braces}` behind: a template satisfied without being
+   filled in is worse than an absent file, because it looks answered. When no
+   `--summary` is given, the script leaves `{Summary}` in place on purpose,
+   so the audit keeps flagging the unit until someone writes the real thing.
 
 4. **Delete lines that do not apply** rather than leaving them empty. An empty
    field reads as missing information; a deleted one reads as not applicable.

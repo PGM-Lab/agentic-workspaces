@@ -1,6 +1,6 @@
 ---
 name: session-log
-description: Close a working session by overwriting the touched unit's STATUS.md and appending a dated entry to its LOG.md. Use ALWAYS after substantial work on any unit in a workspace, and when the user says "close the session", "cierra la sesión", "write this down", "apunta esto", "update the status", "we decided X" or "hemos decidido X" — even if they do not explicitly ask for documentation.
+description: Close a working session by overwriting the touched unit's STATUS.md and appending a dated entry to its LOG.md. Use ALWAYS after substantial work on any unit in a workspace, and when the user says "close the session", "cierra la sesión", "write this down", "apunta esto", "update the status", "we decided X" or "hemos decidido X", even if they do not explicitly ask for documentation.
 ---
 
 # Session Log

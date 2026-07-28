@@ -7,9 +7,9 @@ instead.
 ## The problem
 
 AI agents are good at working inside a folder and bad at remembering it. Every
-session starts from nothing. Given a bare directory, an agent will infer your
-project from filenames, guess at conventions, and be confidently wrong about
-what state the work is in.
+session starts from nothing. Given a bare directory, an agent will guess your
+conventions from the filenames and be confidently wrong about what state the
+work is in.
 
 The usual reactions are to write longer prompts or to paste context by hand at
 the start of every session. Both are the same mistake in different clothes:
@@ -71,8 +71,8 @@ never do without asking. This is the file that turns a folder into a place an
 agent can work.
 
 Claude Code does not read `AGENTS.md` directly, so put a `CLAUDE.md` beside it
-containing one line, `@AGENTS.md`. Every other agent reads the canonical file,
-and there is exactly one copy of the rules.
+that does nothing but import the canonical file (`@AGENTS.md`). Every other
+agent reads that file itself, and there is exactly one copy of the rules.
 
 Individual units can have their own `AGENTS.md`, but only when they have rules
 of their own. A unit-level file that repeats the workspace rules is a
@@ -119,7 +119,7 @@ reliably.
 **`AGENTS.md` is an open standard** (https://agents.md). It began as a README
 for coding agents, backed by OpenAI, Google, Cursor, Amp and Factory, and is
 now stewarded by the Agentic AI Foundation under the Linux Foundation. More
-than thirty tools read it and over 60,000 open-source projects ship one. The
+than twenty tools read it and over 60,000 open-source projects ship one. The
 `CLAUDE.md` bridge uses the import syntax documented in the Claude Code memory
 guide (https://code.claude.com/docs/en/memory).
 
@@ -130,7 +130,7 @@ around the principle of progressive disclosure: the agent holds only each
 skill's name and description in context, and loads the full instructions when
 it decides the skill applies. The specification was released openly in
 December 2025 (https://agentskills.io) and adopted within days by Codex
-(https://developers.openai.com/codex/skills) and VS Code, among others. This
+(https://learn.chatgpt.com/docs/build-skills) and VS Code, among others. This
 is why the same skill folder works across agents without modification.
 
 **The three-file contract is a memory bank.** The pattern of giving an agent

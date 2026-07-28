@@ -1,6 +1,6 @@
 ---
 name: audit-workspace
-description: Check a workspace for consistency against the file contract — units missing a README, STATUS or LOG, unfilled template placeholders, STATUS files that have gone stale, and units whose files contradict each other. Use when the user asks to "audit the workspace", "check consistency", "auditar", "revisar el workspace", "what's half-finished", "which projects are not activated", or before handing a workspace to someone else.
+description: Check a workspace for consistency against the file contract: units missing a README, STATUS or LOG, unfilled template placeholders, STATUS files that have gone stale, and units whose files contradict each other. Use when the user asks to "audit the workspace", "check consistency", "auditar", "revisar el workspace", "what's half-finished", "which projects are not activated", or before handing a workspace to someone else.
 ---
 
 # Audit Workspace
@@ -23,8 +23,9 @@ python3 <path-to-skill>/scripts/audit.py --root <workspace>
 
    It reports missing contract files, leftover `{placeholders}` and `TODO`
    markers, and `STATUS.md` files older than the staleness threshold. Pass
-   `--json` when another tool will consume the output, and `--max-depth` if
-   your units live deeper than three levels below the workspace root.
+   `--json` when another tool will consume the output. `--max-depth` widens
+   how deep the search for unactivated candidates goes; confirmed units,
+   which have a `STATUS.md`, are found at any depth.
 
    It also lists folders with a `README.md` but no `STATUS.md`, as
    "possibly unactivated". That list needs judgement: from the files alone a

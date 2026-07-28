@@ -15,7 +15,8 @@ from pathlib import Path
 
 CONTRACT = ("README.md", "STATUS.md", "LOG.md")
 
-# Folders the contract does not apply to.
+# Folders the contract does not apply to. Keep in sync with the prune list
+# in workspace-overview/scripts/scan.sh.
 SKIP = {
     "archive",
     "archives",
@@ -30,7 +31,7 @@ SKIP = {
     "__pycache__",
 }
 
-PLACEHOLDER = re.compile(r"\{[A-Za-z][^{}\n]{0,60}\}")
+PLACEHOLDER = re.compile(r"\{[^{}]{0,300}\}")
 TODO = re.compile(r"\bTODO\b")
 
 
@@ -75,7 +76,12 @@ def find_units(root: Path, max_depth: int) -> tuple[list[Path], list[Path]]:
         if d not in unit_set
         and (d / "README.md").exists()
         and depth(d) <= max_depth
+        # A container (a folder with units below it) is not a candidate.
         and not any(u != d and d in u.parents for u in units)
+        # Nor is a working subfolder inside an already-activated unit. The
+        # root is exempt as ancestor: a workspace that is itself a unit can
+        # still contain unactivated candidates.
+        and not any(u != root and u in d.parents for u in units)
     ]
     return units, candidates
 
@@ -124,7 +130,9 @@ def main() -> int:
         "--max-depth",
         type=int,
         default=3,
-        help="deepest level a unit can live at, below the workspace root",
+        help="deepest level below the root scanned for unactivated "
+        "candidates; confirmed units (with a STATUS.md) are found at any "
+        "depth",
     )
     p.add_argument("--json", action="store_true", dest="as_json")
     args = p.parse_args()

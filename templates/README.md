@@ -15,6 +15,12 @@ Placeholders are in `{curly braces}`. The `new-unit` script substitutes
 `{Unit name}`, `{YYYY-MM-DD}` and `{Summary}` automatically; everything else
 is filled in by hand.
 
+The `new-unit` skill carries its own copy of `unit/` and `variants/`
+(flattened, with `unit/AGENTS.md` renamed to `unit_AGENTS.md`) so it works in
+a workspace that has no `resources/templates/` yet. The example workspace
+carries the same set. `tests/smoke.sh` fails if any of the three copies
+drift.
+
 Delete placeholder lines that do not apply to a unit rather than leaving them
 empty. An empty field reads as missing information; a deleted one reads as not
 applicable.

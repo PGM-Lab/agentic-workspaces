@@ -22,9 +22,10 @@ description. Recorded here because it was agreed in a corridor conversation
 and exists nowhere else.
 
 ## 2026-03-12
-Target venue set to Journal of Coastal Systems rather than the ICCE
-proceedings. Slower, but the audience for a methods contribution is there and
-the page limit at ICCE would have cut the sensitivity analysis.
+Target venue set to Journal of Coastal Systems rather than the NordCoast
+conference proceedings. Slower, but the audience for a methods contribution
+is there and the page limit at NordCoast would have cut the sensitivity
+analysis.
 
 ## 2026-02-10
 Project started. Three seasons of Sandvik field data available, consortium

@@ -26,9 +26,11 @@ if [ "${#roots[@]}" -eq 0 ]; then
   exit 2
 fi
 
-# Seconds since epoch, portable between macOS (BSD stat) and Linux (GNU stat).
+# Seconds since epoch, portable between macOS (BSD stat) and Linux (GNU
+# stat). GNU first: BSD's -f flag means --file-system to GNU stat, which
+# would print filesystem info instead of failing, so it cannot go first.
 mtime() {
-  stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null
+  stat -c %Y "$1" 2>/dev/null || stat -f %m "$1" 2>/dev/null
 }
 
 now="$(date +%s)"
@@ -38,11 +40,13 @@ for root in "${roots[@]}"; do
     echo "Missing root, skipped: $root" >&2
     continue
   fi
+  # Keep this prune list in sync with SKIP in audit-workspace/scripts/audit.py.
   find "$root" \
     \( -type d \( \
          -name archive -o -name archives -o -name inbox -o \
          -name templates -o -name resources -o -name reference -o \
-         -name .git -o -name node_modules \
+         -name admin -o -name .git -o -name .claude -o \
+         -name node_modules -o -name __pycache__ \
        \) -prune \) -o \
     -type f -name STATUS.md -print 2>/dev/null
 done | while IFS= read -r path; do

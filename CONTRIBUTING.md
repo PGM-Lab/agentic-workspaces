@@ -34,7 +34,9 @@ In rough order of value:
 
 Open an issue. Prose is fine, no template to fill in. If you are proposing a
 concrete change to a file, a pull request is easier to discuss than a
-description of one.
+description of one. For changes to templates or skills, run `tests/smoke.sh`
+first; it walks the getting-started flow end to end and checks that the
+template copies stay in sync.
 
 For workspace-specific adaptations, do not send them upstream. Fork or copy.
 The repository holds the generic core on purpose; the interesting parts of
