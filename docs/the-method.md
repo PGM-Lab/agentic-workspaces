@@ -177,16 +177,21 @@ not closed decays into a directory of stale files within about a month.
 **`workspace-overview`** derives the pending-work board by scanning
 `STATUS.md` files across workspaces. Read-only by design.
 
-**`audit-workspace`** checks units against the contract: missing files,
-unfilled template placeholders, `STATUS.md` files that have not moved in
-months. Run occasionally, not daily.
+**`audit-workspace`** checks units against the contract (missing files,
+unfilled placeholders, `STATUS.md` files that have not moved in months) and
+surveys what is not activated yet, including folders holding work with no
+contract at all. The check is for a settled workspace; the survey is for one
+being adopted over folders that already exist.
 
-Two more are worth building once you have adopted this and hit their absence.
-Neither ships here, because the right shape depends on your setup. An
-**archive** skill for lifecycle moves, since promoting or retiring a unit is a
-multi-step operation you do not want improvised, especially on storage without
-version control. And an **inbox triage** skill, if you keep an `inbox/` folder
-and it stops trending toward empty.
+Three more are worth building once you have adopted this and hit their
+absence. None ships here, because the right shape depends on your setup. An
+**activate** skill that drafts the contract for a folder that already holds
+material, which is the repetitive half of adoption; note that it has to be
+additive only and honest about what it cannot know, since a confidently wrong
+`STATUS.md` is worse than none. An **archive** skill for lifecycle moves,
+since promoting or retiring a unit is a multi-step operation you do not want
+improvised on storage without version control. And an **inbox triage** skill,
+if you keep an `inbox/` folder and it stops trending toward empty.
 
 ## Practical constraints
 
@@ -227,6 +232,8 @@ actually deciding what the unit is and what state it is in. Expect a long
 period where some units are activated and most are merely moved. That is not a
 failure state, but it does mean the generated board is incomplete, and the
 board should say so rather than imply silence means nothing is pending.
+[`adopting-existing-work.md`](adopting-existing-work.md) covers this phase in
+detail, since it is where most of the real work happens.
 
 **Templates invite filler.** A template with placeholders can be satisfied
 without being filled in, and a `STATUS.md` reading "TODO: describe this" is

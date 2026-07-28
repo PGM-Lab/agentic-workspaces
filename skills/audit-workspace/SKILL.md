@@ -1,6 +1,6 @@
 ---
 name: audit-workspace
-description: Check a workspace for consistency against the file contract: units missing a README, STATUS or LOG, unfilled template placeholders, STATUS files that have gone stale, and units whose files contradict each other. Use when the user asks to "audit the workspace", "check consistency", "auditar", "revisar el workspace", "what's half-finished", "which projects are not activated", or before handing a workspace to someone else.
+description: Check a workspace against the file contract and survey what is not activated yet: units missing a README, STATUS or LOG, unfilled template placeholders, stale STATUS files, folders holding work with no contract at all, and units whose files contradict each other. Use when the user asks to "audit the workspace", "check consistency", "auditar", "revisar el workspace", "what's half-finished", "which projects are not activated", "qué falta por activar", when adopting the method over folders that already exist, or before handing a workspace to someone else.
 ---
 
 # Audit Workspace
@@ -27,10 +27,23 @@ python3 <path-to-skill>/scripts/audit.py --root <workspace>
    how deep the search for unactivated candidates goes; confirmed units,
    which have a `STATUS.md`, are found at any depth.
 
-   It also lists folders with a `README.md` but no `STATUS.md`, as
-   "possibly unactivated". That list needs judgement: from the files alone a
-   half-activated unit is indistinguishable from a container folder or a
-   working subfolder that happens to document itself.
+   It sorts folders into three groups, and only the first is a finding. The
+   other two are questions, because from the files alone the answer is not
+   knowable:
+
+   - **units**: they have a `STATUS.md`. These get checked against the
+     contract.
+   - **possibly unactivated**: a `README.md` but no `STATUS.md`. Either a
+     half-activated unit, a container folder, or a working subfolder that
+     documents itself.
+   - **not started**: material but no contract file at all. Either work that
+     was moved into place and never documented, or a folder that was never
+     meant to be a unit. This is the group that matters when adopting the
+     method over folders that already exist, and it is usually the largest.
+
+   The report never descends below a folder it has already named, so it will
+   not enumerate the contents of someone's material. That matters when the
+   material is confidential.
 
 2. Read the flagged files. The script finds candidates; deciding whether
    something is a real problem needs judgement, and the script has none.
@@ -49,7 +62,13 @@ python3 <path-to-skill>/scripts/audit.py --root <workspace>
    - **Is the unit still a unit?** Long-dead work belongs in `archive/`, and
      something that has grown two independent workstreams is two units.
 
-4. Report grouped by severity, not by folder:
+4. When the workspace is being adopted over existing folders, the survey is
+   the point and the contract checks are secondary. Read
+   [`adopting-existing-work.md`](../../docs/adopting-existing-work.md) before
+   proposing anything: the order of work, what should never become a unit,
+   and what can and cannot be recovered from material that is already there.
+
+5. Report grouped by severity, not by folder:
 
    - **Wrong**: files that state something untrue. Highest priority, since
      they mislead both you and the agent.
@@ -58,7 +77,7 @@ python3 <path-to-skill>/scripts/audit.py --root <workspace>
    - **Stale**: not touched in a long time. May be fine. Flag, do not nag.
    - **Cosmetic**: leftover placeholders in otherwise filled-in files.
 
-5. End with a coverage line: how many units have the full contract, out of how
+6. End with a coverage line: how many units have the full contract, out of how
    many exist. During adoption this number is the useful one, and it should be
    stated rather than implied.
 
@@ -72,10 +91,9 @@ python3 <path-to-skill>/scripts/audit.py --root <workspace>
   deviation: it may be documented and intentional.
 - Do not open confidential material in bulk to audit it. Structure can be
   checked from filenames and headers.
-- **The coverage number is not the adoption number.** The script only sees
-  folders that already have at least one contract file. Work that was moved
-  into place but never given any documentation at all is invisible to it, and
-  during adoption that is usually the largest group. If the workspace keeps a
-  separate inventory of what exists versus what is activated, that inventory
-  is the honest denominator, and the audit only checks the folders that have
-  started.
+- **The three groups are a starting point, not a census.** Telling a unit
+  from a container from a folder of loose notes cannot be done from the files
+  alone, and the script will get some of them wrong in both directions. If
+  the workspace keeps its own inventory of what exists versus what is
+  activated, that inventory wins, and the audit's job is to find what the
+  inventory missed.

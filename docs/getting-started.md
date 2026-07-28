@@ -3,6 +3,12 @@
 Setting up the first workspace takes about an hour. Most of that hour is
 deciding what your units are, not copying files.
 
+This guide sets up the mechanics on a clean folder. If you are adopting the
+method over work that already exists, which is the usual case, read
+[`adopting-existing-work.md`](adopting-existing-work.md) alongside it: the
+setup below is the same, but the hard part becomes deciding what your existing
+folders are and in what order to activate them.
+
 Before you start, read [`../examples/`](../examples/). Seeing one filled-in
 workspace makes the rest of this obvious.
 

@@ -25,6 +25,8 @@ SKIP = {
     "templates",
     "reference",
     "admin",
+    # people/ holds notes, one file per person, not units with a contract.
+    "people",
     ".git",
     ".claude",
     "node_modules",
@@ -46,28 +48,53 @@ def candidate_dirs(root: Path):
         yield path
 
 
-def find_units(root: Path, max_depth: int) -> tuple[list[Path], list[Path]]:
-    """Split directories into confirmed units and unactivated candidates.
+def has_loose_files(path: Path) -> bool:
+    """True if the directory holds work of its own, not just subfolders.
+
+    The signal that separates a container (`papers/`, which holds units) from
+    a unit that was moved into place but never documented (`papers/old-thing`,
+    which holds the actual material). Dotfiles do not count.
+    """
+    try:
+        return any(
+            p.is_file() and not p.name.startswith(".") for p in path.iterdir()
+        )
+    except OSError:
+        return False
+
+
+def find_units(root: Path, max_depth: int) -> tuple[list[Path], list[Path], list[Path]]:
+    """Sort directories into units, candidates and not-started work.
 
     A `STATUS.md` is what makes a directory a unit. It is the file the whole
     system revolves around, and the one the overview board reads.
 
-    A directory with a `README.md` but no `STATUS.md` is ambiguous from the
-    files alone. It is either a unit that was migrated but never activated, or
-    else a container (`papers/`, the workspace root) or a working subfolder
-    inside a unit, both of which may reasonably carry a README explaining
-    themselves. Two heuristics separate them, and neither is exact, which is
-    why these are reported as candidates rather than findings:
+    Everything else is ambiguous from the files alone, so the other two groups
+    are reported as questions rather than findings:
 
-    - A directory with units below it is a container.
-    - Units live near the top of a workspace. Anything deeper than
-      `max_depth` is treated as working material inside a unit.
+    - **candidates**: a `README.md` but no `STATUS.md`. Either a unit that was
+      documented and never activated, or a container, or a working subfolder
+      that explains itself.
+    - **not started**: no contract file at all, but real material inside.
+      Either work that was moved into place and never documented, or a folder
+      that was never meant to be a unit.
+
+    Three heuristics separate them, none of them exact: a directory with units
+    below it is a container; units live near the top of a workspace, so
+    anything deeper than `max_depth` is treated as working material; and a
+    directory holding loose files of its own is doing work rather than holding
+    other units.
     """
     dirs = list(candidate_dirs(root))
     units = [d for d in dirs if (d / "STATUS.md").exists()]
 
     def depth(d: Path) -> int:
         return 0 if d == root else len(d.relative_to(root).parts)
+
+    def inside_a_unit(d: Path) -> bool:
+        # The root is exempt as ancestor: a workspace that is itself a unit
+        # can still contain units and undocumented work below it.
+        return any(u != root and u in d.parents for u in units)
 
     unit_set = set(units)
     candidates = [
@@ -76,14 +103,50 @@ def find_units(root: Path, max_depth: int) -> tuple[list[Path], list[Path]]:
         if d not in unit_set
         and (d / "README.md").exists()
         and depth(d) <= max_depth
-        # A container (a folder with units below it) is not a candidate.
         and not any(u != d and d in u.parents for u in units)
-        # Nor is a working subfolder inside an already-activated unit. The
-        # root is exempt as ancestor: a workspace that is itself a unit can
-        # still contain unactivated candidates.
-        and not any(u != root and u in d.parents for u in units)
+        and not inside_a_unit(d)
     ]
-    return units, candidates
+
+    documented = unit_set | set(candidates)
+
+    def has_documented_sibling(d: Path) -> bool:
+        """True if something beside this folder is already an activated unit.
+
+        The strongest signal available that a folder sits at unit level: if
+        `funding/x` has the contract, then `funding/y` is a unit too, whether
+        or not it keeps its material in subfolders.
+        """
+        return any(o.parent == d.parent and o != d for o in documented)
+
+    # Walk top down (rglob is sorted, so parents come before children) and
+    # claim the shallowest undocumented folder that holds work. Everything
+    # below a claimed folder is its own material, not a separate unit. This
+    # is also what stops the report descending into someone's files and
+    # enumerating them, which matters when the material is confidential.
+    not_started: list[Path] = []
+    claimed: set[Path] = set()
+    for d in dirs:
+        if d == root:  # the root is the workspace, never a not-started unit.
+            continue
+        if not 1 <= depth(d) <= max_depth:
+            continue
+        if d in documented or inside_a_unit(d):
+            continue
+        if any((d / name).exists() for name in CONTRACT):
+            continue
+        # A folder holding documented units is a container, not lost work.
+        if any(o != d and d in o.parents for o in documented):
+            continue
+        # Below something already reported, at either level.
+        if any(c in d.parents for c in claimed):
+            continue
+        if any(o in d.parents for o in documented):
+            continue
+        if not (has_loose_files(d) or has_documented_sibling(d)):
+            continue
+        not_started.append(d)
+        claimed.add(d)
+    return units, candidates, not_started
 
 
 def audit_unit(unit: Path, root: Path, stale_days: int) -> dict:
@@ -141,14 +204,20 @@ def main() -> int:
     if not root.is_dir():
         sys.exit(f"Not a directory: {root}")
 
-    units, candidates = find_units(root, args.max_depth)
+    units, candidates, not_started = find_units(root, args.max_depth)
     results = [audit_unit(u, root, args.stale_days) for u in units]
     candidate_names = [str(c.relative_to(root)) for c in candidates]
+    not_started_names = [str(d.relative_to(root)) for d in not_started]
 
     if args.as_json:
         print(
             json.dumps(
-                {"root": str(root), "units": results, "candidates": candidate_names},
+                {
+                    "root": str(root),
+                    "units": results,
+                    "candidates": candidate_names,
+                    "not_started": not_started_names,
+                },
                 indent=2,
             )
         )
@@ -157,7 +226,7 @@ def main() -> int:
     flagged = [r for r in results if not r["complete"] or r["stale_days"]]
     complete = sum(1 for r in results if r["complete"])
 
-    if not units and not candidates:
+    if not units and not candidates and not not_started:
         print(f"No units found under {root}.")
         print("Either the workspace is empty, or nothing has the contract yet.")
         return 0
@@ -183,10 +252,20 @@ def main() -> int:
         for name in candidate_names:
             print(f"  {name}")
 
-    total = len(units) + len(candidates)
+    if not_started_names:
+        print("\nNot started (material but no contract file at all). Check")
+        print("whether each is a unit to activate, archive, or leave alone:")
+        for name in not_started_names:
+            print(f"  {name}")
+
+    total = len(units) + len(candidates) + len(not_started)
     print(f"\nCoverage: {complete}/{total} with the full contract.")
-    if candidates:
-        print(f"{len(candidates)} not activated yet.")
+    pending = len(candidates) + len(not_started)
+    if pending:
+        print(
+            f"{pending} not activated yet "
+            f"({len(candidates)} documented, {len(not_started)} not started)."
+        )
     return 0
 
 

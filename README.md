@@ -53,7 +53,14 @@ practices it borrows from, is in [`docs/the-method.md`](docs/the-method.md).
 
 ## Getting started
 
-Read [`docs/getting-started.md`](docs/getting-started.md). The short version:
+If you already have folders full of work, which is the normal case, read
+[`docs/adopting-existing-work.md`](docs/adopting-existing-work.md) first. It
+covers the part `getting-started.md` skips: surveying what you have, deciding
+what should never become a unit, and what can and cannot be recovered from
+material that is already there.
+
+To set up the mechanics, read
+[`docs/getting-started.md`](docs/getting-started.md). The short version:
 
 1. Pick one area of your work. Not all of it.
 2. Copy `templates/workspace/` to a new folder and fill in the `AGENTS.md`.
@@ -67,10 +74,12 @@ to end up with forty folders full of unfilled templates. Start with one.
 ## What is in here
 
 ```
-docs/          The method and the rationale, plus a setup guide
+docs/          The method and the rationale, a setup guide, and how to
+               adopt it over work that already exists
 templates/     Every file in the contract, ready to copy
 skills/        The four skills that operate the structure
 examples/      A small worked workspace, filled in, to read before you start
+tests/         A smoke test that walks the setup guide end to end
 ```
 
 ## Status and feedback

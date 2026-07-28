@@ -6,8 +6,9 @@ not a workspace itself.
 
 ## What lives where
 
-- `docs/` — the method and its rationale (`the-method.md`), and the setup
-  guide (`getting-started.md`).
+- `docs/` — the method and its rationale (`the-method.md`), the setup guide
+  (`getting-started.md`), and how to adopt it over folders that already exist
+  (`adopting-existing-work.md`).
 - `templates/` — the file contract, ready to copy. `workspace/` for the root
   of a new workspace, `unit/` for a unit of work, `variants/` for
   kind-specific README shapes.
