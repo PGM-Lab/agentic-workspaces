@@ -43,8 +43,13 @@ and is symlinked into `~/.claude/skills/`. One copy, both agents, and
 `git pull` in the clone updates everything.
 
 The install is additive. If you already have a skill with one of these names,
-it is left alone and reported; nothing is overwritten. On Windows, where
-symlinks need administrator rights, add `--copy`.
+it is left alone and reported; nothing is overwritten.
+
+Add `--copy` to install real directories instead of symlinks. Do that on
+Windows, where symlinks need administrator rights; if you intend to delete the
+clone; or if `~/.agents/skills` is itself a repository you share, since
+symlinks into your own machine are broken pointers for everybody else. Copies
+do not follow a `git pull`, so they are updated with `--update` instead.
 
 **Postconditions:** `~/.agents/skills/` contains the kit's skills, and your
 agent lists them. Ask it "what skills do you have?" to check.
@@ -130,7 +135,9 @@ doubles the number of files that lie to you.
 - **Is anything half-finished?** `audit-workspace` checks units against the
   contract and surveys what is not activated yet.
 - **Updating the kit:** `git pull` in the clone. With symlinks there is
-  nothing else to do.
+  nothing else to do. With `--copy`, re-run the installer as
+  `--install --copy --update`: it replaces the copies it made itself and still
+  leaves alone any skill of that name that you wrote.
 
 ## Common mistakes
 

@@ -117,4 +117,43 @@ python3 "$repo/skills/audit-workspace/scripts/audit.py" \
   --root "$repo/examples/example-workspace" \
   | grep -q "Coverage: 2/2" || fail "example workspace regressed"
 
+# 13. The scan can name its roots. The board skill runs outside the workspaces
+#     it reports on, so this is how it finds their AGENTS.md to read the
+#     exceptions each one declares.
+n="$(bash "$repo/skills/workspace-overview/scripts/scan.sh" --roots "$ws" "$fresh" \
+  | wc -l | tr -d ' ')"
+[ "$n" = "2" ] || fail "scan.sh --roots printed $n roots, expected 2"
+bash "$repo/skills/workspace-overview/scripts/scan.sh" --roots "$ws" | grep -qx "$ws" \
+  || fail "scan.sh --roots did not print the root it was given"
+
+# 14. Install into a scratch home, then update. A copy install cannot follow a
+#     git pull, so --update has to replace the kit's own copies; a skill the
+#     user wrote under one of those names must survive both runs.
+home="$tmp/home"
+mkdir -p "$home/.agents/skills/audit-workspace" "$home/.claude/skills"
+printf -- '---\nname: audit-workspace\n---\nWRITTEN BY THE USER\n' \
+  > "$home/.agents/skills/audit-workspace/SKILL.md"
+setup_home() {
+  python3 "$repo/skills/setup-workspace/scripts/setup_workspace.py" \
+    --copy --canonical "$home/.agents/skills" --claude-skills "$home/.claude/skills" "$@"
+}
+setup_home --install >/dev/null || fail "install into a scratch home failed"
+[ -f "$home/.agents/skills/new-unit/SKILL.md" ] || fail "install did not copy new-unit"
+[ -L "$home/.claude/skills/new-unit" ] || fail "install did not bridge to Claude Code"
+grep -q "WRITTEN BY THE USER" "$home/.agents/skills/audit-workspace/SKILL.md" \
+  || fail "install clobbered a skill the user wrote"
+
+out="$(setup_home --update)"
+grep -q "new-unit: kept" <<<"$out" \
+  || fail "--update did not recognize an already up-to-date copy"
+
+echo "STALE" >> "$home/.agents/skills/new-unit/SKILL.md"
+out="$(setup_home --update)"
+grep -q "new-unit: updated" <<<"$out" || fail "--update did not refresh an outdated copy"
+grep -q "STALE" "$home/.agents/skills/new-unit/SKILL.md" \
+  && fail "--update left the outdated copy in place"
+grep -q "WRITTEN BY THE USER" "$home/.agents/skills/audit-workspace/SKILL.md" \
+  || fail "--update replaced a skill the user wrote"
+[ -L "$home/.claude/skills/new-unit" ] || fail "--update broke the bridge to Claude Code"
+
 echo "smoke OK"

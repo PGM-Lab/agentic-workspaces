@@ -80,8 +80,10 @@ of your work and let it prove itself.
 **Where things live.** The clone is not where you work: it is the source of
 the skills and the documentation. Your work lives in your own directories.
 Keep the clone on local disk, never inside a synced folder like Google Drive
-or Dropbox, because the installation uses symlinks and sync services do not
-carry them.
+or Dropbox, because the default installation symlinks into the clone and sync
+services do not carry symlinks. Installing with `--copy` instead makes real
+copies that no longer need the clone, at the price of updating them with
+`--update` rather than a `git pull`.
 
 ## What is in here
 

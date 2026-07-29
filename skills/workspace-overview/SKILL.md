@@ -21,21 +21,30 @@ arguments. Without either, the script has nothing to scan and says so.
 
 ## Workflow
 
-1. Run `scripts/scan.sh` from this skill's directory. It prints every relevant
-   `STATUS.md` as `<days-since-modified>` and `<path>`, newest first, already
-   excluding archives, inboxes, templates and generated material. If the
-   script cannot run, fall back to finding `STATUS.md` files under each root
-   with the same exclusions.
+1. Run `scripts/scan.sh --roots` and read the `AGENTS.md` at the top of each
+   root it prints, or `CLAUDE.md` where that is what holds the rules. This is
+   the one skill that runs outside the workspaces it reports on, so nothing
+   loads those files for you. They are where a workspace states two things this
+   skill cannot know: which of its units do not carry their own `STATUS.md`,
+   and what it allows onto a board that leaves its tree. Honour what you read.
+   The rules below are the floor, not the ceiling.
 
-2. Read each file and extract: the state line, the next step, pending items
+2. Run `scripts/scan.sh`. It prints every relevant `STATUS.md` as
+   `<days-since-modified>` and `<path>`, newest first, already excluding
+   archives, inboxes, templates and generated material. If the script cannot
+   run, fall back to finding `STATUS.md` files under each root with the same
+   exclusions.
+
+3. Read each file and extract: the state line, the next step, pending items
    with deadlines, blocked items, and the last-updated date. Use the scan's
    file age as a fallback when the header date is missing.
 
-3. Note any unit type that does not follow the one-STATUS-per-unit rule. Short
-   lived units sometimes carry a single file instead, aggregated at the
-   workspace root. Read the aggregate and do not walk the subfolders.
+4. Apply the aggregation exceptions from step 1. Short lived units sometimes
+   carry a single file instead of the contract, aggregated at the workspace
+   root: read the aggregate and do not walk the subfolders. If a root says
+   nothing, treat one `STATUS.md` per unit as the rule.
 
-4. Produce the board in this order:
+5. Produce the board in this order:
 
    - **Deadlines in the next 30 days**, sorted by date, each with its unit and
      workspace.
@@ -49,13 +58,13 @@ arguments. Without either, the script has nothing to scan and says so.
      "nothing pending". This matters most during adoption, when many units are
      migrated but not yet activated.
 
-5. Keep it tight. This is a scan, not a report.
+6. Keep it tight. This is a scan, not a report.
 
 ## Confidentiality
 
 The board aggregates across workspaces, which means it crosses the boundaries
 those workspaces exist to enforce. Apply the strictest rule that applies to
-each source.
+each source, and apply whatever its own `AGENTS.md` adds on top of these.
 
 - Refer to confidential units by project, course or initiative, never by
   person's name.

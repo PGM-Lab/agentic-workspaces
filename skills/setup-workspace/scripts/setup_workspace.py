@@ -10,10 +10,17 @@ destinations avoids a session spent approving writes.
 Never destructive. It adds; it never overwrites a file someone has edited,
 and it leaves an existing skill of the same name alone rather than replacing
 it.
+
+The one exception is `--update`, and it is narrow: it replaces only the skills
+this script installed itself, which it recognizes by a stamp file it wrote at
+the time. Anything else of the same name is still somebody's own work and is
+still left alone. Without this, a copy install could never be updated, because
+the first run makes every later run look like a conflict.
 """
 from __future__ import annotations
 
 import argparse
+import filecmp
 import json
 import os
 import shutil
@@ -29,6 +36,16 @@ BUNDLED_UNIT = REPO / "skills" / "new-unit" / "templates"
 # through a symlink. One copy, two agents.
 CANONICAL = Path.home() / ".agents" / "skills"
 CLAUDE = Path.home() / ".claude" / "skills"
+
+# Dropped inside each skill this script copies, so a later --update can tell
+# the kit's own copies from a skill of the same name that the user wrote.
+# A symlink needs no stamp: where it points already says who put it there.
+STAMP = ".installed-by-agentic-workspaces"
+STAMP_TEXT = (
+    "Installed from the agentic-workspaces kit. Running the installer with\n"
+    "--update may replace this directory. Delete this file to make the\n"
+    "installer treat the skill as yours and leave it alone from then on.\n"
+)
 
 KIND_PRESETS = {
     "by-kind": {
@@ -50,24 +67,58 @@ def say(msg: str) -> None:
     print(msg)
 
 
-def link_or_copy(src: Path, dest: Path, copy: bool) -> str:
-    """Return a one-word outcome: linked, copied, kept, or conflict."""
+def same_tree(src: Path, dest: Path) -> bool:
+    """True when dest holds the same content as src, stamp file aside."""
+    diff = filecmp.dircmp(src, dest, ignore=[STAMP, *filecmp.DEFAULT_IGNORES])
+    if diff.left_only or diff.right_only or diff.funny_files:
+        return False
+    _, mismatch, errors = filecmp.cmpfiles(
+        src, dest, diff.common_files, shallow=False
+    )
+    if mismatch or errors:
+        return False
+    return all(same_tree(src / d, dest / d) for d in diff.common_dirs)
+
+
+def installed_by_kit(src: Path, dest: Path) -> bool:
+    """True when this script put dest there, so --update may replace it."""
+    if dest.is_symlink():
+        return dest.resolve() == src.resolve()
+    return (dest / STAMP).is_file()
+
+
+def link_or_copy(src: Path, dest: Path, copy: bool, update: bool = False) -> str:
+    """Return a one-word outcome: linked, copied, updated, kept, or conflict."""
     if dest.is_symlink() or dest.exists():
         if dest.is_symlink() and dest.resolve() == src.resolve():
             return "kept"
-        return "conflict"
+        if not (update and installed_by_kit(src, dest)):
+            return "conflict"
+        if copy and dest.is_dir() and not dest.is_symlink() and same_tree(src, dest):
+            return "kept"
+        # Only ever reached for something this script installed itself.
+        if dest.is_symlink() or dest.is_file():
+            dest.unlink()
+        else:
+            shutil.rmtree(dest)
+        return _place(src, dest, copy, "updated")
+    return _place(src, dest, copy, None)
+
+
+def _place(src: Path, dest: Path, copy: bool, outcome: str | None) -> str:
     dest.parent.mkdir(parents=True, exist_ok=True)
     if copy:
         shutil.copytree(src, dest, symlinks=True)
-        return "copied"
+        (dest / STAMP).write_text(STAMP_TEXT)
+        return outcome or "copied"
     # Absolute, so the link survives the skills directory being moved. The
     # links checked into the repo are relative instead, because those have to
     # work in anybody's clone.
     dest.symlink_to(src.resolve())
-    return "linked"
+    return outcome or "linked"
 
 
-def install_skills(copy: bool, canonical: Path, claude: Path) -> int:
+def install_skills(copy: bool, update: bool, canonical: Path, claude: Path) -> int:
     if not SKILLS_SRC.is_dir():
         sys.exit(f"Cannot find the kit's skills at {SKILLS_SRC}")
 
@@ -83,27 +134,42 @@ def install_skills(copy: bool, canonical: Path, claude: Path) -> int:
 
     conflicts = []
     for src in sorted(p for p in SKILLS_SRC.iterdir() if (p / "SKILL.md").is_file()):
-        outcome = link_or_copy(src, canonical / src.name, copy)
+        outcome = link_or_copy(src, canonical / src.name, copy, update)
         if outcome == "conflict":
             conflicts.append(src.name)
-            say(f"  {src.name}: already installed, left untouched")
+            say(f"  {src.name}: already there, left untouched")
             continue
-        say(f"  {src.name}: {outcome} into {canonical}")
+        preposition = "into" if outcome in ("copied", "linked") else "in"
+        say(f"  {src.name}: {outcome} {preposition} {canonical}")
         # Claude Code reads its own directory; point it at the canonical copy.
-        bridge = link_or_copy(canonical / src.name, claude / src.name, copy=False)
+        bridge = link_or_copy(canonical / src.name, claude / src.name, False, update)
         if bridge == "conflict":
             say(f"  {src.name}: a different skill of this name exists in {claude}")
 
     if conflicts:
+        tail = (
+            "These were not installed by the kit, so --update leaves them alone too."
+            if update
+            else "Nothing was overwritten. Re-run with --update to replace the ones "
+            "the kit installed earlier; the rest stay yours."
+        )
         say(
             "\nLeft alone because something of the same name was already there: "
             + ", ".join(conflicts)
-            + "\nNothing was overwritten. Compare them yourself and merge if you want the kit's version."
+            + "\n"
+            + tail
+            + "\nCompare them yourself and merge if you want the kit's version."
         )
     if not copy:
         say(
             f"\nInstalled as symlinks into this clone ({REPO}).\n"
             "Update everything later with: git pull. Do not delete or move the clone."
+        )
+    else:
+        say(
+            "\nInstalled as real copies, so the clone can be moved or deleted.\n"
+            "Update later with: git pull in the clone, then re-run this with "
+            "--install --copy --update."
         )
     return 0
 
@@ -168,6 +234,13 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--install", action="store_true", help="install the kit's skills")
     p.add_argument("--copy", action="store_true", help="copy skills instead of symlinking")
+    p.add_argument(
+        "--update",
+        action="store_true",
+        help="replace the skills this installer put there earlier, which is how "
+        "a --copy install picks up a git pull. Never touches a skill of the "
+        "same name that you wrote yourself. Implies --install",
+    )
     p.add_argument("--workspace", help="path of the workspace to create")
     p.add_argument("--name", default="", help="human name of the workspace")
     p.add_argument(
@@ -195,15 +268,15 @@ def main() -> int:
     )
     args = p.parse_args()
 
-    if not args.install and not args.workspace:
-        p.error("nothing to do: pass --install, --workspace, or both")
+    if not args.install and not args.update and not args.workspace:
+        p.error("nothing to do: pass --install, --update, --workspace, or a mix")
 
     canonical = Path(args.canonical).expanduser()
     claude = Path(args.claude_skills).expanduser()
 
-    if args.install:
-        say("Installing skills")
-        install_skills(args.copy, canonical, claude)
+    if args.install or args.update:
+        say("Updating skills" if args.update else "Installing skills")
+        install_skills(args.copy, args.update, canonical, claude)
 
     if args.workspace:
         root = Path(args.workspace).expanduser().resolve()

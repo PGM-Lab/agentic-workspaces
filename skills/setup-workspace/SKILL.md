@@ -28,8 +28,16 @@ of the same name that is already there is left alone and reported, never
 replaced. Tell the user what was skipped, if anything, and that nothing was
 overwritten.
 
-Pass `--copy` if the user is on Windows, where symlinks need administrator
-rights, or if they intend to delete the clone.
+Pass `--copy` to install real directories instead of symlinks: on Windows,
+where symlinks need administrator rights; when the user intends to delete the
+clone; or when their `~/.agents/skills` is a repository they share, where
+symlinks into their own machine would be broken pointers for everyone else.
+
+Copies do not follow a `git pull`. To update them, run the same command with
+`--update` added. It replaces only what this installer put there, which it
+recognizes by a stamp file it wrote at install time, and still leaves alone a
+skill of the same name that the user wrote. Report which skills were updated
+and which were left.
 
 For an agent that is neither Claude Code nor Codex, the skills still work:
 they are plain `SKILL.md` folders. Tell the user to list them in the

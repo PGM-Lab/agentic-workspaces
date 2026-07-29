@@ -35,9 +35,11 @@ not a workspace itself.
   in the workspace (`resources/kinds.json`, `resources/templates/`). Editing
   an installed skill to suit one workspace silently breaks the others.
 - **Scripts that write are additive and idempotent.** Never overwrite a file
-  someone may have edited, never replace a skill that is already installed,
+  someone may have edited, never replace a skill the user may have written,
   and append to config files rather than rewriting them. Users run these
-  against storage with no undo.
+  against storage with no undo. Replacing the kit's own earlier output is the
+  single exception: it has to be asked for explicitly, as `--update` is, and
+  the script has to be able to prove the thing it replaces was its own.
 - **A skill that drafts prose must not invent.** Write only what the user
   said, and leave what you could not fill as a visible `{placeholder}` rather
   than omitting it. An omitted section looks finished and passes every check.

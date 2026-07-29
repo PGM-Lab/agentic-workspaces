@@ -4,7 +4,18 @@
 #
 # Roots come from the arguments, or from roots.txt next to this script
 # (one absolute path per line, blank lines and # comments ignored).
+#
+# With --roots, print the resolved roots and stop. The board skill reads each
+# workspace's AGENTS.md before scanning, because that is where a workspace
+# states the exceptions to the one-STATUS-per-unit rule and what it allows to
+# leave its tree. Those rules belong to the workspace, not to this skill.
 set -uo pipefail
+
+list_roots=0
+if [ "${1:-}" = "--roots" ]; then
+  list_roots=1
+  shift
+fi
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 roots_file="$here/../roots.txt"
@@ -24,6 +35,11 @@ if [ "${#roots[@]}" -eq 0 ]; then
   echo "No workspace roots configured." >&2
   echo "Pass them as arguments, or create $roots_file with one path per line." >&2
   exit 2
+fi
+
+if [ "$list_roots" -eq 1 ]; then
+  printf '%s\n' "${roots[@]}"
+  exit 0
 fi
 
 # Seconds since epoch, portable between macOS (BSD stat) and Linux (GNU
