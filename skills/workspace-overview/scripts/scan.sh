@@ -2,8 +2,12 @@
 # List every relevant STATUS.md across the configured workspace roots,
 # as "<days-since-modified>\t<path>", most recently touched first.
 #
-# Roots come from the arguments, or from roots.txt next to this script
-# (one absolute path per line, blank lines and # comments ignored).
+# Roots come from the arguments, or from a roots.txt holding one absolute
+# path per line (blank lines and # comments ignored), looked for at
+# $AGENTIC_WORKSPACES_ROOTS, then in the config directory, then next to this
+# script. That last one is where it used to live and still works, but it is a
+# poor home: the installer owns the skill directory and rewrites it on update,
+# while this file is machine configuration that exists nowhere else.
 #
 # With --roots, print the resolved roots and stop. The board skill reads each
 # workspace's AGENTS.md before scanning, because that is where a workspace
@@ -18,12 +22,21 @@ if [ "${1:-}" = "--roots" ]; then
 fi
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-roots_file="$here/../roots.txt"
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+config_file="$config_home/agentic-workspaces/roots.txt"
+
+roots_file=""
+for candidate in "${AGENTIC_WORKSPACES_ROOTS:-}" "$config_file" "$here/../roots.txt"; do
+  if [ -n "$candidate" ] && [ -f "$candidate" ]; then
+    roots_file="$candidate"
+    break
+  fi
+done
 
 roots=()
 if [ "$#" -gt 0 ]; then
   roots=("$@")
-elif [ -f "$roots_file" ]; then
+elif [ -n "$roots_file" ]; then
   while IFS= read -r line; do
     line="${line%%#*}"
     line="$(printf '%s' "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
@@ -33,7 +46,7 @@ fi
 
 if [ "${#roots[@]}" -eq 0 ]; then
   echo "No workspace roots configured." >&2
-  echo "Pass them as arguments, or create $roots_file with one path per line." >&2
+  echo "Pass them as arguments, or create $config_file with one path per line." >&2
   exit 2
 fi
 

@@ -2,5 +2,7 @@
 __pycache__/
 *.pyc
 
-# local configuration, machine-specific
+# Local configuration, machine-specific. Its home is now
+# ~/.config/agentic-workspaces/roots.txt; this covers a leftover from an
+# older install, which the scan still reads.
 skills/workspace-overview/roots.txt

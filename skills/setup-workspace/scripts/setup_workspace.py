@@ -37,6 +37,11 @@ BUNDLED_UNIT = REPO / "skills" / "new-unit" / "templates"
 CANONICAL = Path.home() / ".agents" / "skills"
 CLAUDE = Path.home() / ".claude" / "skills"
 
+# Machine configuration, so it lives outside the skill directories: those
+# belong to the installer and get replaced on update.
+CONFIG = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+OVERVIEW_ROOTS = CONFIG / "agentic-workspaces" / "roots.txt"
+
 # Dropped inside each skill this script copies, so a later --update can tell
 # the kit's own copies from a skill of the same name that the user wrote.
 # A symlink needs no stamp: where it points already says who put it there.
@@ -334,7 +339,7 @@ def main() -> int:
         "--overview-roots",
         default="",
         help="roots.txt to append the new workspace to; 'none' to skip "
-        "(default: the installed workspace-overview skill's own roots.txt)",
+        f"(default: {OVERVIEW_ROOTS})",
     )
     args = p.parse_args()
 
@@ -356,7 +361,7 @@ def main() -> int:
         elif args.overview_roots:
             roots = Path(args.overview_roots).expanduser()
         else:
-            roots = canonical / "workspace-overview" / "roots.txt"
+            roots = OVERVIEW_ROOTS
         seed_workspace(root, args.name or root.name, args.layout, roots)
 
     return 0

@@ -72,5 +72,8 @@ live in the workspace itself:
   Without them, `new-unit` uses the copy bundled with the skill.
 
 The one exception is `workspace-overview`, which needs to know which
-workspaces exist: `setup-workspace` appends each new one to its `roots.txt`,
-and never rewrites the file.
+workspaces exist. That list is machine configuration rather than a property of
+any workspace, so it lives at `~/.config/agentic-workspaces/roots.txt`, well
+away from the skill directories: those belong to the installer, which replaces
+them on update. `setup-workspace` appends each new workspace to that file, and
+never rewrites it.

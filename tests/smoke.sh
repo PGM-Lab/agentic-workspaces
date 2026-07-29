@@ -181,6 +181,25 @@ out="$(setup_home --update)"
 grep -q "new-unit: repaired" <<<"$out" || fail "--update did not repair a dangling link"
 [ -f "$home/.agents/skills/new-unit/SKILL.md" ] || fail "the repair left nothing usable"
 
+# 16b. The roots list is machine config and lives outside the skill, so that
+#      an update cannot reach it at all. Config beats the legacy in-skill copy,
+#      and arguments beat both.
+cfg="$tmp/config"
+mkdir -p "$cfg/agentic-workspaces"
+printf '# a comment\n\n  %s  \n' "$ws" > "$cfg/agentic-workspaces/roots.txt"
+printf '/tmp/legacy-location\n' > "$repo/skills/workspace-overview/roots.txt"
+trap 'rm -rf "$tmp" "$repo/skills/workspace-overview/roots.txt"' EXIT
+got="$(XDG_CONFIG_HOME="$cfg" bash "$repo/skills/workspace-overview/scripts/scan.sh" --roots)"
+[ "$got" = "$ws" ] \
+  || fail "the config roots.txt was not used, or its parsing broke: got '$got'"
+got="$(XDG_CONFIG_HOME="$tmp/empty" \
+  bash "$repo/skills/workspace-overview/scripts/scan.sh" --roots)"
+[ "$got" = "/tmp/legacy-location" ] \
+  || fail "a roots.txt left beside the script from an older install stopped working"
+got="$(XDG_CONFIG_HOME="$cfg" \
+  bash "$repo/skills/workspace-overview/scripts/scan.sh" --roots "$fresh")"
+[ "$got" = "$fresh" ] || fail "arguments no longer win over the config file"
+
 # 17. Symlink install migrating to copies, which is what the docs now
 #     recommend for a shared ~/.agents/skills.
 linked="$tmp/linked"

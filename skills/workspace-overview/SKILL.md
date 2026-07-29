@@ -15,9 +15,16 @@ the chat; write it to a file only if the user asks.
 
 ## Before first use
 
-Configure the roots to scan. Either create a `roots.txt` in this skill's
-directory with one absolute workspace path per line, or pass them as
-arguments. Without either, the script has nothing to scan and says so.
+Configure the roots to scan. Create
+`~/.config/agentic-workspaces/roots.txt` with one absolute workspace path per
+line, or pass the paths as arguments, or point `AGENTIC_WORKSPACES_ROOTS` at a
+file elsewhere. `setup-workspace` writes that file for you as it seeds each
+workspace. Without any of them, the script has nothing to scan and says so.
+
+The file is machine configuration: absolute paths that are nobody else's. It
+lives outside this skill's directory on purpose, since the installer owns that
+directory and replaces it on update. A `roots.txt` left next to the script
+from an older install is still read, but move it.
 
 ## Workflow
 
