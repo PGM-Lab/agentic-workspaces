@@ -67,10 +67,32 @@ def say(msg: str) -> None:
     print(msg)
 
 
-def same_tree(src: Path, dest: Path) -> bool:
-    """True when dest holds the same content as src, stamp file aside."""
+def extra_paths(src: Path, dest: Path) -> list[Path]:
+    """Paths, relative to dest, that dest has and src does not.
+
+    These are the user's, not ours. A skill directory is not only ours to
+    fill: workspace-overview keeps its roots.txt inside its own directory,
+    which is machine configuration nobody else has a copy of.
+    """
     diff = filecmp.dircmp(src, dest, ignore=[STAMP, *filecmp.DEFAULT_IGNORES])
-    if diff.left_only or diff.right_only or diff.funny_files:
+    found = [Path(name) for name in diff.right_only]
+    for name in diff.common_dirs:
+        found.extend(
+            Path(name) / rel for rel in extra_paths(src / name, dest / name)
+        )
+    return found
+
+
+def same_tree(src: Path, dest: Path) -> bool:
+    """True when dest carries our content unchanged, stamp file aside.
+
+    Files the user added are not drift: they are preserved by an update, so
+    their presence must not make one look necessary.
+    """
+    diff = filecmp.dircmp(src, dest, ignore=[STAMP, *filecmp.DEFAULT_IGNORES])
+    # common_funny is the same name being a file on one side and a directory
+    # on the other, which cmpfiles cannot see.
+    if diff.left_only or diff.funny_files or diff.common_funny:
         return False
     _, mismatch, errors = filecmp.cmpfiles(
         src, dest, diff.common_files, shallow=False
@@ -88,21 +110,62 @@ def installed_by_kit(src: Path, dest: Path) -> bool:
 
 
 def link_or_copy(src: Path, dest: Path, copy: bool, update: bool = False) -> str:
-    """Return a one-word outcome: linked, copied, updated, kept, or conflict."""
+    """One-word outcome: linked, copied, updated, converted, repaired, kept,
+    or conflict."""
     if dest.is_symlink() or dest.exists():
-        if dest.is_symlink() and dest.resolve() == src.resolve():
+        dangling = dest.is_symlink() and not dest.exists()
+        ours = dest.is_symlink() and not dangling and dest.resolve() == src.resolve()
+        # Migrating an existing link to a real copy is a reason to act, so
+        # only short-circuit when the mode asked for is the one already there.
+        if ours and not (update and copy):
             return "kept"
-        if not (update and installed_by_kit(src, dest)):
+        if not update:
             return "conflict"
-        if copy and dest.is_dir() and not dest.is_symlink() and same_tree(src, dest):
+        if dangling:
+            # A link pointing nowhere holds nobody's work, and it is what a
+            # moved or deleted clone leaves behind. Repairing it is the only
+            # way out, and there is nothing here to destroy.
+            _clear(dest)
+            return _place(src, dest, copy, "repaired")
+        if not installed_by_kit(src, dest):
+            return "conflict"
+        was_copy = dest.is_dir() and not dest.is_symlink()
+        if copy and was_copy and same_tree(src, dest):
             return "kept"
+        if was_copy and not copy and extra_paths(src, dest):
+            # Turning this into a symlink would point it at the clone, and the
+            # user's own files here would have nowhere to go. Their only home
+            # is a real directory, so refuse rather than lose them.
+            return "holds-yours"
         # Only ever reached for something this script installed itself.
-        if dest.is_symlink() or dest.is_file():
-            dest.unlink()
-        else:
-            shutil.rmtree(dest)
-        return _place(src, dest, copy, "updated")
+        return _replace(src, dest, copy, "updated" if was_copy == copy else "converted")
     return _place(src, dest, copy, None)
+
+
+def _clear(path: Path) -> None:
+    if path.is_symlink() or path.is_file():
+        path.unlink()
+    elif path.is_dir():
+        shutil.rmtree(path)
+
+
+def _replace(src: Path, dest: Path, copy: bool, outcome: str) -> str:
+    """Swap dest for a fresh install, carrying the user's own files across.
+
+    Staged beside the target and renamed into place, so an interrupted update
+    cannot leave the skill missing. The user's files move into the staging
+    copy before anything is removed.
+    """
+    staged = dest.parent / f".{dest.name}.new"
+    _clear(staged)
+    _place(src, staged, copy, None)
+    if dest.is_dir() and not dest.is_symlink() and copy:
+        for rel in extra_paths(src, dest):
+            (staged / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(dest / rel), str(staged / rel))
+    _clear(dest)
+    staged.rename(dest)
+    return outcome
 
 
 def _place(src: Path, dest: Path, copy: bool, outcome: str | None) -> str:
@@ -135,6 +198,13 @@ def install_skills(copy: bool, update: bool, canonical: Path, claude: Path) -> i
     conflicts = []
     for src in sorted(p for p in SKILLS_SRC.iterdir() if (p / "SKILL.md").is_file()):
         outcome = link_or_copy(src, canonical / src.name, copy, update)
+        if outcome == "holds-yours":
+            say(
+                f"  {src.name}: left as a real copy. It holds files of yours "
+                f"({', '.join(str(p) for p in extra_paths(src, canonical / src.name))})"
+                ", which a symlink into the clone could not. Re-run with --copy."
+            )
+            continue
         if outcome == "conflict":
             conflicts.append(src.name)
             say(f"  {src.name}: already there, left untouched")

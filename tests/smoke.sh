@@ -156,4 +156,41 @@ grep -q "WRITTEN BY THE USER" "$home/.agents/skills/audit-workspace/SKILL.md" \
   || fail "--update replaced a skill the user wrote"
 [ -L "$home/.claude/skills/new-unit" ] || fail "--update broke the bridge to Claude Code"
 
+# 15. A skill directory is not only ours to fill: workspace-overview keeps its
+#     roots.txt inside it, and that file exists nowhere else. An update must
+#     carry it across, and must not mistake it for drift.
+board="$home/.agents/skills/workspace-overview"
+printf '/tmp/some-workspace\n' > "$board/roots.txt"
+out="$(setup_home --update)"
+grep -q "workspace-overview: kept" <<<"$out" \
+  || fail "a file the user added was mistaken for a reason to update"
+[ -f "$board/roots.txt" ] || fail "--update destroyed the user's roots.txt"
+
+echo "STALE" >> "$board/SKILL.md"
+setup_home --update >/dev/null
+[ -f "$board/roots.txt" ] || fail "a real update destroyed the user's roots.txt"
+grep -q "STALE" "$board/SKILL.md" && fail "the real update did not happen"
+grep -qx "/tmp/some-workspace" "$board/roots.txt" \
+  || fail "the user's roots.txt came back with the wrong content"
+
+# 16. A dangling link is what a moved or deleted clone leaves behind. It holds
+#     no work, so --update has to be able to repair it.
+rm -rf "$home/.agents/skills/new-unit"
+ln -s "$tmp/gone" "$home/.agents/skills/new-unit"
+out="$(setup_home --update)"
+grep -q "new-unit: repaired" <<<"$out" || fail "--update did not repair a dangling link"
+[ -f "$home/.agents/skills/new-unit/SKILL.md" ] || fail "the repair left nothing usable"
+
+# 17. Symlink install migrating to copies, which is what the docs now
+#     recommend for a shared ~/.agents/skills.
+linked="$tmp/linked"
+mkdir -p "$linked/.agents/skills" "$linked/.claude/skills"
+python3 "$repo/skills/setup-workspace/scripts/setup_workspace.py" --install \
+  --canonical "$linked/.agents/skills" --claude-skills "$linked/.claude/skills" >/dev/null
+[ -L "$linked/.agents/skills/new-unit" ] || fail "the symlink install did not link"
+python3 "$repo/skills/setup-workspace/scripts/setup_workspace.py" --install --copy --update \
+  --canonical "$linked/.agents/skills" --claude-skills "$linked/.claude/skills" >/dev/null
+[ -L "$linked/.agents/skills/new-unit" ] && fail "--copy --update did not migrate off symlinks"
+[ -f "$linked/.agents/skills/new-unit/SKILL.md" ] || fail "the migration lost the skill"
+
 echo "smoke OK"
