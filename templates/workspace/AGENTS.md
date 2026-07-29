@@ -11,6 +11,21 @@ Before working in a subfolder, read the `AGENTS.md`, `README.md` and
 `STATUS.md` closest to the work. Local instructions complement these rules and
 win where they are more specific.
 
+## Language
+
+{The language everything written to a file here is in: these instructions,
+READMEs, STATUS, LOG, and anything an agent generates. Pick one and say it
+plainly, because an agent left to guess will mirror whatever language the
+request came in and the workspace ends up half in each.}
+
+{Say whether it differs from the language you talk to the agent in. Those are
+two separate things: a request made in one language can still produce files in
+another, and if you want that, it has to be written down.}
+
+{Say what keeps its original language regardless: material from other people,
+official documents, quoted sources. Those are evidence, not writing of yours,
+and translating them loses the ability to cite them.}
+
 ## Structure
 
 {One line per top-level folder: what goes in it and what its lifecycle is.}

@@ -13,6 +13,21 @@ Before working in a subfolder, read the `AGENTS.md`, `README.md` and
 `STATUS.md` closest to the work. Local instructions complement these rules and
 win where they are more specific.
 
+## Language
+
+Everything written to a file here is in English: this file, READMEs, STATUS,
+LOG, and anything an agent generates. The consortium works in English and the
+partners read these files.
+
+Conversation is a separate matter. Members of the group discuss the work in
+Finnish, Swedish or English as it suits them; the files stay English either
+way, and an agent should not mirror the language a request happened to arrive
+in.
+
+Partner data, ministry documents and quoted sources keep their original
+language. They are evidence: translating them means they can no longer be
+cited against the original.
+
 ## Structure
 
 - `projects/` — one folder per piece of work with an end: a paper, a report, a
