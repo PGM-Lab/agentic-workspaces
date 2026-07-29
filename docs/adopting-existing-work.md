@@ -165,11 +165,16 @@ So: let an agent draft the state, and write the next action yourself. If you
 cannot state one, that is information. Say so explicitly, or consider whether
 the unit is actually dormant.
 
-In practice, for each unit: ask the agent to read the folder and draft the
-`README.md` and the state line of `STATUS.md`, then write the next action
-yourself and correct what it got wrong. There is no skill for this yet, so
-say what you want explicitly. Never let it invent the next action, and never
-let it batch several units at once.
+In practice, for each unit, say:
+
+> Activate this folder.
+
+That is the `activate` skill. It inspects the folder without reading through
+your files, drafts the `README.md` and the state line of `STATUS.md`, asks
+you for the next action rather than inventing one, and writes a log with a
+single honest entry. It only ever adds those three files: it never moves,
+renames or reorganises anything, and it does one folder per invocation on
+purpose.
 
 **`LOG.md` is not recoverable at all.** Past decisions and their reasoning are
 not in the folder. They are in people's heads and in mail archives. Do not

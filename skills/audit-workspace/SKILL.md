@@ -1,6 +1,6 @@
 ---
 name: audit-workspace
-description: Check a workspace against the file contract and survey what is not activated yet: units missing a README, STATUS or LOG, unfilled template placeholders, stale STATUS files, folders holding work with no contract at all, and units whose files contradict each other. Use when the user asks to "audit the workspace", "check consistency", "auditar", "revisar el workspace", "what's half-finished", "which projects are not activated", "qué falta por activar", when adopting the method over folders that already exist, or before handing a workspace to someone else.
+description: Survey a whole workspace read-only and report what is wrong or missing: units whose README, STATUS or LOG is absent, unfilled placeholders, stale STATUS files, folders holding work with no contract at all, and files that contradict each other. Answers "what is the state of this workspace" and "what is left to activate"; it never writes. To then write the contract for one of the folders it lists, use the `activate` skill. Use when the user asks to "audit the workspace", "check consistency", "auditar", "revisar el workspace", "what's half-finished", "qué falta por activar", or before handing a workspace to someone else.
 ---
 
 # Audit Workspace
@@ -67,6 +67,10 @@ python3 <path-to-skill>/scripts/audit.py --root <workspace>
    [`adopting-existing-work.md`](../../docs/adopting-existing-work.md) before
    proposing anything: the order of work, what should never become a unit,
    and what can and cannot be recovered from material that is already there.
+
+   Report the list and stop. Writing the contract for one of those folders is
+   the `activate` skill's job, one folder at a time, and it is a decision the
+   user takes folder by folder rather than a batch this skill kicks off.
 
 5. Report grouped by severity, not by folder:
 

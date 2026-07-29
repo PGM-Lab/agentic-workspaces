@@ -147,7 +147,14 @@ def find_units(root: Path, max_depth: int) -> tuple[list[Path], list[Path], list
     candidates = [
         d
         for d in dirs
-        if d not in unit_set
+        # The root is the workspace. Its README describes the workspace, so it
+        # is never a half-activated unit; only a STATUS.md makes it one, which
+        # is the single-unit workspace case. Without this, a workspace with no
+        # activated units yet reports its own root and, being everything's
+        # ancestor, hides every real finding below it. That is precisely the
+        # freshly-created, nothing-activated-yet case this has to serve.
+        if d != root
+        and d not in unit_set
         and (d / "README.md").exists()
         and depth(d) <= max_depth
         and not any(u != d and d in u.parents for u in units)

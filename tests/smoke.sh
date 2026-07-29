@@ -77,11 +77,42 @@ printf '\n## Confidentiality\n\n## Rules\n\n- something\n' >> "$ws/AGENTS.md"
 python3 "$repo/skills/audit-workspace/scripts/audit.py" --root "$ws" \
   | grep -q "empty sections" || fail "audit missed an empty AGENTS.md section"
 
-# 9. The board scan sees the unit's STATUS file.
+# 9. A folder with material and no contract is seen as not started, and the
+#    inspect script reports on it without writing anything.
+mkdir -p "$ws/projects/moved-in/sub"
+printf 'see https://example.org/x\n' > "$ws/projects/moved-in/notes.md"
+: > "$ws/projects/moved-in/sub/data.csv"
+before="$(find "$ws/projects/moved-in" | sort)"
+python3 "$repo/skills/audit-workspace/scripts/audit.py" --root "$ws" \
+  | grep -q "projects/moved-in" || fail "audit missed a folder with material and no contract"
+out="$(python3 "$repo/skills/activate/scripts/inspect_folder.py" \
+  "$ws/projects/moved-in" --root "$ws")"
+grep -q "nothing yet" <<<"$out" || fail "inspect did not report the missing contract"
+grep -q "the next action" <<<"$out" || fail "inspect dropped its statement of what it cannot know"
+[ "$before" = "$(find "$ws/projects/moved-in" | sort)" ] \
+  || fail "inspect_folder wrote something; it must be read-only"
+
+# 10. A brand-new workspace with material but nothing activated yet. This
+#     needs its own workspace: once anything below has a STATUS.md the root is
+#     already excluded as a container, which hides the bug. Every workspace
+#     has a root README, so treating it as a candidate made it the ancestor of
+#     everything and suppressed every real finding.
+fresh="$tmp/fresh"
+python3 "$repo/skills/setup-workspace/scripts/setup_workspace.py" \
+  --workspace "$fresh" --name Fresh --overview-roots none >/dev/null
+mkdir -p "$fresh/projects/moved-in-too"
+: > "$fresh/projects/moved-in-too/paper.pdf"
+fresh_out="$(python3 "$repo/skills/audit-workspace/scripts/audit.py" --root "$fresh")"
+grep -qE '^  \.$' <<<"$fresh_out" \
+  && fail "the workspace root was reported as an unactivated unit"
+grep -q "projects/moved-in-too" <<<"$fresh_out" \
+  || fail "a workspace with nothing activated yet reported none of its material"
+
+# 11. The board scan sees the unit's STATUS file.
 n="$(bash "$repo/skills/workspace-overview/scripts/scan.sh" "$ws" | wc -l | tr -d ' ')"
 [ "$n" = "1" ] || fail "scan found $n STATUS files, expected 1"
 
-# 10. The example workspace still audits clean.
+# 12. The example workspace still audits clean.
 python3 "$repo/skills/audit-workspace/scripts/audit.py" \
   --root "$repo/examples/example-workspace" \
   | grep -q "Coverage: 2/2" || fail "example workspace regressed"

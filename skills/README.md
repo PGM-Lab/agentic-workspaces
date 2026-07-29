@@ -1,15 +1,21 @@
 # Skills
 
-Five skills that operate the structure. Everything else you build on top will
+Six skills that operate the structure. Everything else you build on top will
 be domain work.
 
 | Skill | What it does | When |
 |---|---|---|
 | `setup-workspace` | Installs the kit and creates a workspace | Once per machine, once per workspace |
 | `new-unit` | Creates a unit from the right template | Whenever work has no folder yet |
+| `activate` | Writes the contract for a folder that already holds work | While adopting, one folder at a time |
 | `session-log` | Overwrites STATUS, appends to LOG | End of every working session |
 | `workspace-overview` | Generates the pending board from STATUS files | Weekly, or on demand |
 | `audit-workspace` | Checks the contract and surveys what is not activated | Occasionally, and while adopting |
+
+`new-unit` and `activate` are the two halves of the same job: one starts from
+a template with nothing in it, the other starts from material with no
+template. `audit-workspace` finds the folders that need the second; it never
+writes them itself.
 
 ## Installing
 

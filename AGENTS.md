@@ -12,7 +12,7 @@ not a workspace itself.
 - `templates/` — the file contract, ready to copy. `workspace/` for the root
   of a new workspace, `unit/` for a unit of work, `variants/` for
   kind-specific README shapes.
-- `skills/` — the five structural skills, in the portable `SKILL.md` format.
+- `skills/` — the six structural skills, in the portable `SKILL.md` format.
 - `.claude/skills/` and `.agents/skills/` — relative symlinks to `skills/`,
   so both Claude Code and Codex discover them in a fresh clone. Add an entry
   in both whenever a skill is added.

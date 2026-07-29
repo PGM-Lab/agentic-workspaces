@@ -169,7 +169,7 @@ labels.
 
 ## The core skills
 
-Five skills operate the structure. Everything else you build will be domain
+Six skills operate the structure. Everything else you build will be domain
 work sitting on top.
 
 **`setup-workspace`** installs the kit and creates a workspace: three
@@ -196,17 +196,22 @@ not closed decays into a directory of stale files within about a month.
 unfilled placeholders, `STATUS.md` files that have not moved in months) and
 surveys what is not activated yet, including folders holding work with no
 contract at all. The check is for a settled workspace; the survey is for one
-being adopted over folders that already exist.
+being adopted over folders that already exist. It never writes.
 
-Three more are worth building once you have adopted this and hit their
-absence. None ships here, because the right shape depends on your setup. An
-**activate** skill that drafts the contract for a folder that already holds
-material, which is the repetitive half of adoption; note that it has to be
-additive only and honest about what it cannot know, since a confidently wrong
-`STATUS.md` is worse than none. An **archive** skill for lifecycle moves,
-since promoting or retiring a unit is a multi-step operation you do not want
-improvised on storage without version control. And an **inbox triage** skill,
-if you keep an `inbox/` folder and it stops trending toward empty.
+**`activate`** writes the contract for one folder that already holds
+material, which is the repetitive half of adoption. It is the most dangerous
+skill in the set, so it is the most constrained: additive only, one folder
+per invocation, and it asks for the next action rather than inventing one,
+because a confidently wrong `STATUS.md` is worse than none. Its log has a
+single entry saying the record starts now, since the history genuinely is
+not recoverable from the folder.
+
+Two more are worth building once you have adopted this and hit their absence.
+Neither ships here, because the right shape depends on your setup. An
+**archive** skill for lifecycle moves, since promoting or retiring a unit is
+a multi-step operation you do not want improvised on storage without version
+control. And an **inbox triage** skill, if you keep an `inbox/` folder and it
+stops trending toward empty.
 
 ## Practical constraints
 
