@@ -46,6 +46,24 @@ file rather than a folder with the contract. `subfolders` defaults to
 them. Add a matching README variant to the workspace templates for each kind
 you add.
 
+A kind whose work nests inside another unit puts `{parent}` in its folder, and
+each unit says which parent it belongs to:
+
+```json
+{
+  "semester": { "folder": "semesters", "readme": "semester_README.md" },
+  "course":   { "folder": "semesters/{parent}", "readme": "course_README.md" }
+}
+```
+
+```sh
+python3 <path-to-skill>/scripts/new_unit.py "Machine Intelligence" \
+  --type course --parent 2026-Autumn --root .
+```
+
+The parent has to exist already. The script will not create it, because a
+mistyped parent would appear as a new empty folder rather than an error.
+
 Templates come from the workspace's `resources/templates/` when it exists.
 When it does not, the script falls back to the copy bundled with this skill
 (`templates/` next to it). To customize, copy the bundle to

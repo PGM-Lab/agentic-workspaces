@@ -92,6 +92,12 @@ def main() -> int:
         f"{KINDS_FILE} (default: %(default)s)",
     )
     p.add_argument("--summary", default="", help="one-line summary")
+    p.add_argument(
+        "--parent",
+        default="",
+        help="for a kind whose folder contains {parent}, the unit this one "
+        "goes inside: a semester, a programme, a client",
+    )
     p.add_argument("--root", default=".", help="workspace root (default: cwd)")
     p.add_argument(
         "--templates",
@@ -128,6 +134,29 @@ def main() -> int:
     spec = kinds[args.type]
     templates = resolve_templates(root, args.templates, default_templates)
 
+    # Some work nests: a course inside a semester, a project inside a
+    # programme. The kind says so by putting {parent} in its folder, since
+    # which parent is a per-unit answer and the folder is a per-kind one.
+    folder = spec["folder"]
+    if "{parent}" in folder:
+        if not args.parent:
+            sys.exit(
+                f"Kind '{args.type}' goes inside another unit: its folder is "
+                f"'{folder}'. Say which one with --parent."
+            )
+        folder = folder.replace("{parent}", args.parent)
+        if not (root / folder).is_dir():
+            sys.exit(
+                f"No such parent: {root / folder}\n"
+                "Create it first, or check the spelling. Creating it here "
+                "would hide a typo as a new empty folder."
+            )
+    elif args.parent:
+        sys.exit(
+            f"Kind '{args.type}' does not nest: its folder is '{folder}', "
+            "with no {parent} in it, so --parent has nowhere to go."
+        )
+
     def read_template(name: str) -> str:
         path = templates / name
         if not path.exists():
@@ -139,7 +168,7 @@ def main() -> int:
     # Single-file kinds: one note, no contract.
     if spec.get("note"):
         content = fill(read_template(spec["readme"]), args.name, args.summary)
-        dest = root / spec["folder"] / f"{slug}.md"
+        dest = root / folder / f"{slug}.md"
         if dest.exists():
             sys.exit(f"Already exists: {dest}")
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -147,7 +176,7 @@ def main() -> int:
         print(dest)
         return 0
 
-    base = root / spec["folder"] / slug
+    base = root / folder / slug
     if base.exists():
         sys.exit(f"Already exists: {base}")
 

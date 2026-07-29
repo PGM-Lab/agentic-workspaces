@@ -79,6 +79,18 @@ subfolders inside a unit.
 - Reviews written for journals are confidential to the journal. Keep them in
   the relevant unit and never in a board or summary.
 
+## Board
+
+The overview board runs outside this workspace, so what it needs to know about
+it has to be written here.
+
+- Group entries by kind (projects, areas, people) rather than as one flat
+  list. Sorted only by date, the standing areas bury the deadlines.
+- On a board that leaves this tree, name a project and its state, never a
+  manuscript title under review and never a line quoted from a review.
+- A `people/` note may appear by the collaborator's name, with state and dates
+  only.
+
 ## Skills
 
 The structural skills this workspace relies on (`new-unit`, `session-log`)

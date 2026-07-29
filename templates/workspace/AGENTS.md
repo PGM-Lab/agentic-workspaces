@@ -65,6 +65,20 @@ subfolders inside a unit.
   authorization.}
 - {What must never appear in summaries, boards or cross-workspace views.}
 
+## Board
+
+`workspace-overview` runs outside this workspace, so this section is the only
+way it learns anything specific about it. Keep the heading in English even if
+the rest of the file is not: the skill looks for it by name. Delete the section
+if the defaults are right, one `STATUS.md` per unit and nothing to hide.
+
+- {Any unit here that does not carry its own `STATUS.md`: what it carries
+  instead, and which file aggregates it. The board must not walk those
+  subfolders.}
+- {What may appear about this workspace on a board that leaves its tree, and
+  what may never: names, amounts, identifiers, anything quoted verbatim.}
+- {How to group this workspace's entries, if a flat list would be unreadable.}
+
 ## Skills
 
 {List every skill an agent needs in this workspace, wherever it is

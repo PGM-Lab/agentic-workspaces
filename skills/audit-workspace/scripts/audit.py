@@ -52,7 +52,12 @@ def audit_workspace_agents(root: Path) -> dict:
     section it could not fill.
     """
     path = root / "AGENTS.md"
-    empty_result = {"present": False, "placeholders": 0, "empty_sections": []}
+    empty_result = {
+        "present": False,
+        "placeholders": 0,
+        "empty_sections": [],
+        "board": False,
+    }
     if not path.exists():
         return empty_result
     try:
@@ -81,6 +86,10 @@ def audit_workspace_agents(root: Path) -> dict:
         "present": True,
         "placeholders": len(PLACEHOLDER.findall(text)),
         "empty_sections": empty,
+        # The one section whose heading is fixed English by convention,
+        # because a skill outside the workspace has to find it by name. Its
+        # body is in the author's language like everything else.
+        "board": any(title.strip().lower() == "board" for title, _ in sections),
     }
 
 
@@ -292,6 +301,10 @@ def main() -> int:
         if problems:
             print("AGENTS.md (workspace root): " + "; ".join(problems))
             print("This is the file that tells an agent what it may not do.\n")
+        if not agents["board"]:
+            print('AGENTS.md: no "## Board" section, so an overview board will')
+            print("use its defaults here: one STATUS.md per unit, no grouping,")
+            print("nothing withheld. Say so there if any of that is wrong.\n")
 
     flagged = [r for r in results if not r["complete"] or r["stale_days"]]
     complete = sum(1 for r in results if r["complete"])

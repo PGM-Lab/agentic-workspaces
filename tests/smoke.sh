@@ -117,6 +117,56 @@ python3 "$repo/skills/audit-workspace/scripts/audit.py" \
   --root "$repo/examples/example-workspace" \
   | grep -q "Coverage: 2/2" || fail "example workspace regressed"
 
+# 12b. Seeding a workspace appends it to the board's roots list, once, and
+#      never rewrites what is already in there.
+rootsfile="$tmp/roots.txt"
+printf '# kept\n/already/here\n' > "$rootsfile"
+python3 "$repo/skills/setup-workspace/scripts/setup_workspace.py" \
+  --workspace "$tmp/third" --name Third --overview-roots "$rootsfile" >/dev/null
+# The path is written resolved, and on macOS $TMPDIR resolves through a
+# symlink, so compare against the canonical form rather than what we passed.
+third="$(cd "$tmp/third" && pwd -P)"
+grep -qx "/already/here" "$rootsfile" || fail "seeding rewrote an existing roots.txt"
+grep -qx "$third" "$rootsfile" || fail "seeding did not add the workspace to roots.txt"
+python3 "$repo/skills/setup-workspace/scripts/setup_workspace.py" \
+  --workspace "$tmp/third" --name Third --overview-roots "$rootsfile" >/dev/null
+[ "$(grep -cx "$third" "$rootsfile")" = "1" ] \
+  || fail "seeding twice listed the same workspace twice"
+
+# 12c. A kind can nest inside another unit, which is what seasonal work needs
+#      (a course inside a semester). The parent has to exist: inventing it
+#      would turn a typo into an empty folder.
+python3 - "$ws/resources/kinds.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+kinds = json.load(open(p))
+kinds["course"] = {"folder": "terms/{parent}", "readme": "project_README.md"}
+json.dump(kinds, open(p, "w"), indent=2)
+PY
+python3 "$repo/skills/new-unit/scripts/new_unit.py" "Nested" --type course \
+  --root "$ws" >/dev/null 2>&1 && fail "a nesting kind was created with no --parent"
+python3 "$repo/skills/new-unit/scripts/new_unit.py" "Nested" --type course \
+  --parent 2026-Autumn --root "$ws" >/dev/null 2>&1 \
+  && fail "new-unit invented a parent that does not exist"
+mkdir -p "$ws/terms/2026-Autumn"
+python3 "$repo/skills/new-unit/scripts/new_unit.py" "Nested" --type course \
+  --parent 2026-Autumn --root "$ws" >/dev/null || fail "nesting kind failed"
+[ -f "$ws/terms/2026-Autumn/nested/LOG.md" ] || fail "the nested unit is in the wrong place"
+python3 "$repo/skills/new-unit/scripts/new_unit.py" "Flat" --type project \
+  --parent 2026-Autumn --root "$ws" >/dev/null 2>&1 \
+  && fail "--parent was accepted by a kind that does not nest"
+
+# 12d. The board section is the one heading a skill outside the workspace
+#      looks for by name, so the audit has to see whether it is there.
+python3 "$repo/skills/audit-workspace/scripts/audit.py" --root "$fresh" \
+  | grep -q '"## Board" section' \
+  && fail "audit warned about the Board section the workspace template ships"
+bare="$tmp/bare"
+mkdir -p "$bare"
+printf '# Bare\n\n## Rules\n\n- something\n' > "$bare/AGENTS.md"
+python3 "$repo/skills/audit-workspace/scripts/audit.py" --root "$bare" \
+  | grep -q '"## Board" section' || fail "audit did not report a missing Board section"
+
 # 13. The scan can name its roots. The board skill runs outside the workspaces
 #     it reports on, so this is how it finds their AGENTS.md to read the
 #     exceptions each one declares.

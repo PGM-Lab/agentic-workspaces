@@ -28,13 +28,19 @@ from an older install is still read, but move it.
 
 ## Workflow
 
-1. Run `scripts/scan.sh --roots` and read the `AGENTS.md` at the top of each
-   root it prints, or `CLAUDE.md` where that is what holds the rules. This is
-   the one skill that runs outside the workspaces it reports on, so nothing
-   loads those files for you. They are where a workspace states two things this
-   skill cannot know: which of its units do not carry their own `STATUS.md`,
-   and what it allows onto a board that leaves its tree. Honour what you read.
-   The rules below are the floor, not the ceiling.
+1. Run `scripts/scan.sh --roots` and read the `## Board` section of the
+   `AGENTS.md` at the top of each root it prints. This is the one skill that
+   runs outside the workspaces it reports on, so nothing loads those files for
+   you, and that section is where a workspace states what this skill cannot
+   know: which of its units do not carry their own `STATUS.md`, what may not
+   leave its tree, and how its entries should be grouped. The heading is
+   English by convention even in a workspace written in another language.
+   Honour what you read; the rules below are the floor, not the ceiling.
+
+   A root with no `## Board` section gets the defaults: one `STATUS.md` per
+   unit, no grouping, nothing withheld beyond the rules below. If the rest of
+   its `AGENTS.md` plainly contradicts that, follow the file and say in the
+   closing line that the section is missing, rather than quietly guessing.
 
 2. Run `scripts/scan.sh`. It prints every relevant `STATUS.md` as
    `<days-since-modified>` and `<path>`, newest first, already excluding
