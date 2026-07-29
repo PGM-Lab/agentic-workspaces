@@ -156,6 +156,25 @@ python3 "$repo/skills/new-unit/scripts/new_unit.py" "Flat" --type project \
   --parent 2026-Autumn --root "$ws" >/dev/null 2>&1 \
   && fail "--parent was accepted by a kind that does not nest"
 
+# 12c-bis. A kind named with an identifier keeps it verbatim, because
+#          slugifying 2026-Autumn into 2026-autumn breaks the convention it
+#          came from. A name that cannot be a folder is still refused.
+python3 - "$ws/resources/kinds.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+kinds = json.load(open(p))
+kinds["cohort"] = {"folder": "cohorts", "readme": "project_README.md", "literal": True}
+json.dump(kinds, open(p, "w"), indent=2)
+PY
+python3 "$repo/skills/new-unit/scripts/new_unit.py" "2026-Autumn" --type cohort \
+  --root "$ws" >/dev/null || fail "a literal kind could not be created"
+# By listing rather than testing the path: a case-insensitive filesystem
+# answers yes to 2026-Autumn when what is really there is 2026-autumn.
+ls "$ws/cohorts" | grep -qx "2026-Autumn" \
+  || fail "a literal kind had its name slugified anyway"
+python3 "$repo/skills/new-unit/scripts/new_unit.py" "../escape" --type cohort \
+  --root "$ws" >/dev/null 2>&1 && fail "a literal name with a slash was accepted"
+
 # 12d. The board section is the one heading a skill outside the workspace
 #      looks for by name, so the audit has to see whether it is there.
 python3 "$repo/skills/audit-workspace/scripts/audit.py" --root "$fresh" \

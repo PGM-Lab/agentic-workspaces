@@ -64,6 +64,10 @@ python3 <path-to-skill>/scripts/new_unit.py "Machine Intelligence" \
 The parent has to exist already. The script will not create it, because a
 mistyped parent would appear as a new empty folder rather than an error.
 
+A kind named with an identifier rather than a title takes `"literal": true`,
+and its name becomes the folder name untouched. Use it where slugifying would
+damage a name that is already canonical, like `2026-Autumn` or a course code.
+
 Templates come from the workspace's `resources/templates/` when it exists.
 When it does not, the script falls back to the copy bundled with this skill
 (`templates/` next to it). To customize, copy the bundle to

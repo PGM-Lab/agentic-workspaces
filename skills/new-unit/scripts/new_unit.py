@@ -163,7 +163,19 @@ def main() -> int:
             sys.exit(f"Missing template: {path}")
         return path.read_text()
 
-    slug = slugify(args.name)
+    # Some kinds are named with an identifier rather than a title: a semester
+    # (2026-Autumn), a cohort, a course code. Slugifying those damages a name
+    # that was already canonical, so the kind can ask to keep it verbatim.
+    if spec.get("literal"):
+        slug = args.name.strip()
+        if not slug or slug.startswith(".") or "/" in slug or "\\" in slug:
+            sys.exit(
+                f"Kind '{args.type}' uses the name as the folder name, so "
+                f"'{args.name}' will not do: no slashes, and not starting "
+                "with a dot."
+            )
+    else:
+        slug = slugify(args.name)
 
     # Single-file kinds: one note, no contract.
     if spec.get("note"):
