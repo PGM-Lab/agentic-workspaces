@@ -1,146 +1,154 @@
 # Getting started
 
-Setting up the first workspace takes about an hour. Most of that hour is
-deciding what your units are, not copying files.
+Setting up the first workspace takes about an hour, and most of that hour is
+you deciding what your units are. The mechanical part is done by an agent
+using the kit's own skills, which is the point: a method for working with
+agents should be installable by one.
 
-This guide sets up the mechanics on a clean folder. If you are adopting the
-method over work that already exists, which is the usual case, read
-[`adopting-existing-work.md`](adopting-existing-work.md) alongside it: the
-setup below is the same, but the hard part becomes deciding what your existing
+Read [`the-method.md`](the-method.md) first. It is short, and both you and
+the agent need it: one that has not read it will append to `STATUS.md` and
+rewrite `LOG.md`, and the contract stops meaning anything. Then read
+[`../examples/`](../examples/), because one filled-in workspace makes the
+templates obvious in a way the templates themselves do not.
+
+If you already have folders full of work, which is the normal case, read
+[`adopting-existing-work.md`](adopting-existing-work.md) alongside this. The
+setup below is the same; the hard part becomes deciding what your existing
 folders are and in what order to activate them.
 
-Before you start, read [`../examples/`](../examples/). Seeing one filled-in
-workspace makes the rest of this obvious.
+## Where things live
 
-## 1. Pick one area
+The clone of this repository is **not** where you work. It is the source of
+the skills and the documentation. Your work lives in your own directories.
 
-One. Not your whole working life.
+Keep the clone on local disk, for instance under `~/Documents`. Never inside
+a synced folder such as Google Drive, Dropbox or OneDrive: the installation
+uses symlinks and sync services do not carry them.
 
-Choose something you are actively working on, with a handful of live projects.
-Resist starting with the biggest or messiest area: you want a first workspace
-that proves the method to you, and the messy one will teach you the wrong
-lesson about whether it works.
+## 1. Install
 
-Decide where it goes. Cloud storage is fine and is what most people will use,
-with the constraints in [`the-method.md`](the-method.md#practical-constraints).
-Code repositories stay outside it.
+Clone the repository, open your agent inside the clone, and say:
 
-## 2. Create the workspace root
+> Install these skills.
 
-Copy `templates/workspace/` into your new folder. You get three files:
-
-- `AGENTS.md` — fill this in. It is the only file that genuinely needs
-  thought.
-- `CLAUDE.md` — leave it alone. One import line.
-- `README.md` — a human-facing map of the workspace.
-
-Filling in `AGENTS.md` means answering four questions. What is this workspace
-for. What are the top-level folders and what goes in each. What are the rules
-an agent must follow. What is confidential and must not leave.
-
-Be concrete and be short. "Never submit a cluster job without asking me first"
-is a useful rule. "Follow best practices" is not a rule.
-
-## 3. Decide your top-level folders
-
-This is the design decision that matters, and there are two common shapes.
-
-**By kind of work**, when different kinds have different lifecycles. A
-research workspace might use `papers/`, `grants/`, `funding/`, `reviews/`,
-each with its own natural beginning and end.
-
-**By cycle**, when the work is seasonal and everything moves together. A
-teaching workspace might use `semesters/2026-autumn/<course>/`, because the
-whole semester is archived at once.
-
-Whichever you choose, add these:
-
-- `areas/` for standing responsibilities with no end date.
-- `resources/` for templates and reusable material. It can start empty: the
-  `new-unit` skill carries a bundled copy of the unit templates and uses it
-  whenever the workspace has no `resources/templates/`. Copy the bundle in
-  the day you want to customize a template.
-- `archive/` for finished work. Searchable, not curated. Nothing here needs
-  the contract applied retroactively.
-- `inbox/` only if you actually have unclassified material arriving. It should
-  trend toward empty; if it becomes permanent storage, drop it.
-
-Do not pre-create empty folders for work you might do one day. A new kind of
-work earns a folder the day it happens for real.
-
-## 4. Install the skills
-
-Copy the skill folders into your agent's skills directory:
+The agent finds `setup-workspace` (the clone ships the skills where both
+Claude Code and Codex look) and runs it. If you would rather do it yourself:
 
 ```bash
-cp -r skills/*/ ~/.claude/skills/
+python3 skills/setup-workspace/scripts/setup_workspace.py --install
 ```
 
-Codex reads `~/.agents/skills/` natively. If you use both agents, keep the
-canonical copy in `~/.agents/skills/` and symlink it into `~/.claude/skills/`,
-so you are not maintaining two versions. Note that symlinks do not survive
-cloud sync, so the canonical copy belongs on local disk.
+One canonical copy goes to `~/.agents/skills/`, which Codex reads natively,
+and is symlinked into `~/.claude/skills/`. One copy, both agents, and
+`git pull` in the clone updates everything.
 
-Then edit the `KINDS` table at the top of
-`skills/new-unit/scripts/new_unit.py` to match the folders you chose in
-step 3 (its `SKILL.md` explains the mapping). It ships with generic kinds
-(`project`, `area`, `person`) and it is meant to be edited.
+The install is additive. If you already have a skill with one of these names,
+it is left alone and reported; nothing is overwritten. On Windows, where
+symlinks need administrator rights, add `--copy`.
 
-Finally, list your skills in the workspace `AGENTS.md`, under `## Skills`,
-each with its path and a one-line trigger. Claude Code discovers skills on its
-own; other agents do not, and this section is what lets you say "read and
-follow that file" to any agent.
+**Postconditions:** `~/.agents/skills/` contains the kit's skills, and your
+agent lists them. Ask it "what skills do you have?" to check.
 
-## 5. Create one unit and use it
+*Using an agent that is neither Claude Code nor Codex?* The skills are plain
+`SKILL.md` folders following the open standard, so they work anywhere. Put
+them where your agent looks, and list them in your workspace `AGENTS.md`
+under `## Skills` with their paths, which any agent can be told to follow.
 
-Ask your agent to create a unit for something real you are working on, or run
-the script directly:
+## 2. Create a workspace
 
-```bash
-python3 ~/.claude/skills/new-unit/scripts/new_unit.py "Name of the thing" --type project --root .
-```
+Open your agent in the directory where the work should live and say:
 
-The first run will note it is using the skill's bundled templates; that is
-expected until you customize your own.
+> Create a workspace here for my teaching.
 
-Then fill in the three files with real content, not placeholder text. This
-first unit is the example every later one gets modelled on, and it is also
-how you find out whether your `README.md` template is asking for the right
-things.
+`setup-workspace` asks three questions and nothing more: what the workspace
+is for, where it lives, and whether your work comes in **kinds** with
+different lifecycles (papers, grants, reviews) or moves in **cycles** that
+end together (semesters, terms). Then it creates the skeleton and drafts the
+`AGENTS.md` for you to correct.
 
-Work in that folder for a week. At the end of each session, tell the agent to
-close the session, or invoke `session-log` by name.
+Correct it properly. `AGENTS.md` is the only file that genuinely needs
+thought, and it is where an agent learns what it must never do. Be concrete:
+"never submit a cluster job without asking me first" is a rule; "follow best
+practices" is noise. Anything the agent could not fill stays as a visible
+`{placeholder}` rather than being quietly dropped.
 
-## 6. Check whether it is working
+Ask it to add a short **Why this shape** section to the workspace `README.md`
+while the reasons are fresh: why these folders, what is confidential, where
+the canonical sources live. Three lines. It is the part nobody can
+reconstruct a year later.
 
-After a week, one question: when you open that folder cold, does `STATUS.md`
-tell you the truth?
+**Postconditions:**
 
-If yes, add a second workspace.
+- `AGENTS.md`, `CLAUDE.md` and `README.md` exist at the workspace root.
+- `CLAUDE.md` contains only the `@AGENTS.md` import.
+- `AGENTS.md` has no empty sections and no leftover placeholders you did not
+  put there on purpose.
+- `resources/kinds.json` names *your* kinds, not the generic ones.
+- The audit runs clean:
+  `python3 ~/.agents/skills/audit-workspace/scripts/audit.py --root .`
 
-If no, the problem is almost always that sessions are not being closed. Before
-adding anything, fix that. Options that work: put the rule explicitly in
-`AGENTS.md` so the agent proposes it unprompted, or make a habit of ending
-with "cierra la sesión" or "close the session". A second workspace built on a
-habit that has not formed just doubles the number of files that lie to you.
+The kinds live in the workspace, at `resources/kinds.json`, never in the
+installed skill. That is deliberate: the skill is shared by every workspace,
+so editing it to suit one would break the others.
+
+## 3. Create one unit and use it
+
+Say:
+
+> I'm starting a paper on compound storm surge.
+
+`new-unit` seeds the folder with `README.md`, `STATUS.md` and `LOG.md` from
+the right template. Fill in the three files with real content, once,
+properly. Not placeholder text. This first unit is the model every later one
+follows, and it is how you find out whether your `README.md` template asks
+for the right things.
+
+Then work in that folder for a week. At the end of each session say "close
+the session" or invoke `session-log`, which overwrites `STATUS.md` and
+appends a dated entry to `LOG.md`.
+
+**Postcondition:** a unit whose `STATUS.md` tells the truth when you open it
+cold a week later.
+
+## 4. Check whether it is working
+
+After a week, one question: does `STATUS.md` still tell the truth?
+
+If yes, add a second workspace. `setup-workspace` will offer "same as
+`<existing>` except X" rather than asking everything again.
+
+If no, the cause is almost always that sessions are not being closed. Fix
+that before adding anything. Put the rule explicitly in `AGENTS.md` so the
+agent proposes it unprompted, or make a habit of ending with "close the
+session". A second workspace built on a habit that has not formed just
+doubles the number of files that lie to you.
+
+## The rest of the day to day
+
+- **What is pending?** `workspace-overview` generates the board from your
+  `STATUS.md` files. Never keep a second list by hand.
+- **Is anything half-finished?** `audit-workspace` checks units against the
+  contract and surveys what is not activated yet.
+- **Updating the kit:** `git pull` in the clone. With symlinks there is
+  nothing else to do.
 
 ## Common mistakes
 
-**Converting everything in one weekend.** The most reliable way to end up with
-forty folders of empty templates. The template is not the value; the filled-in
-content is, and that part cannot be batched.
+**Working inside the clone.** It is the source of the kit, not a workspace.
+
+**Converting everything in one weekend.** The most reliable way to end up
+with forty folders of empty templates. The template is not the value; the
+filled-in content is, and that part cannot be batched.
 
 **Applying the full contract to tiny units.** Something that lives two weeks
-and has one fact worth recording deserves one file. Keep the contract for
-units with enough state to justify it.
+and has one fact worth recording deserves one file.
 
 **Putting status in the README.** It will go stale, and unlike `STATUS.md`
-nobody will think to check it. If it changes, it belongs in `STATUS.md`.
+nobody will think to check it.
 
-**Keeping a separate to-do list.** Once a global list exists as its own
-document it becomes a second source of truth and starts to diverge. Generate
-the view instead.
+**Keeping a separate to-do list.** It becomes a second source of truth and
+starts to diverge. Generate the view instead.
 
-**Writing rules nobody follows.** An `AGENTS.md` full of aspirational process
-trains you to ignore it. Write down the rules that are real, including the
-unglamorous ones.
+**Accepting the drafted `AGENTS.md` without reading it.** It is the one file
+the agent cannot get right on its own, because most of what belongs in it is
+in your head.

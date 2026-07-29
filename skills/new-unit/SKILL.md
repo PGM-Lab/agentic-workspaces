@@ -9,27 +9,48 @@ Seed a new unit so everything in the workspace has the same shape. The value
 is not saving keystrokes, it is that units created this way never end up
 missing a `LOG.md`.
 
-## Before first use
+## The kinds of unit a workspace has
 
-**Edit the `KINDS` table in `scripts/new_unit.py`** to match your workspace's
-top-level folders. It ships with three generic kinds:
+Kinds are **per workspace**, not per machine, so they live in the workspace
+itself at `resources/kinds.json`. Never edit the script to change them: the
+skill is installed once and shared by every workspace, so editing it would
+break the workspaces you set up earlier.
 
-| Kind | Goes to | README template |
-|---|---|---|
-| `project` | `projects/` | `project_README.md` |
-| `area` | `areas/` | `area_README.md` |
-| `person` | `people/` | `person_README.md` (single file, no contract) |
+To see what a workspace has:
 
-A research workspace would replace these with `paper`, `grant`, `application`,
-`review`, `student`. A consultancy might use `client`, `engagement`,
-`proposal`. Add a matching README variant to the templates for each kind you
-add.
+```sh
+python3 <path-to-skill>/scripts/new_unit.py --list-kinds --root <workspace>
+```
+
+Without a `kinds.json`, three generic kinds are used (`project`, `area`,
+`person`), which is what lets the skill work in a fresh workspace. A real
+workspace names its own. The format, one entry per kind:
+
+```json
+{
+  "paper":  { "folder": "papers",  "readme": "paper_README.md" },
+  "grant":  { "folder": "grants",  "readme": "grant_README.md" },
+  "student": {
+    "folder": "students",
+    "readme": "student_README.md",
+    "subfolders": ["admin", "meetings"],
+    "extra": { "TIMELINE.md": "student_TIMELINE.md" }
+  },
+  "person": { "folder": "people", "readme": "person_README.md", "note": true }
+}
+```
+
+`folder` and `readme` are required. `note: true` marks a kind that is a single
+file rather than a folder with the contract. `subfolders` defaults to
+`["notes"]`. `extra` adds contract files beyond the three, for kinds that need
+them. Add a matching README variant to the workspace templates for each kind
+you add.
 
 Templates come from the workspace's `resources/templates/` when it exists.
 When it does not, the script falls back to the copy bundled with this skill
-(`templates/` next to it), so the skill works in a fresh workspace with no
-setup. To customize, copy the bundle to `<workspace>/resources/templates/`
-and edit there; the workspace copy then takes precedence.
+(`templates/` next to it). To customize, copy the bundle to
+`<workspace>/resources/templates/` and edit there; the workspace copy then
+takes precedence.
 
 ## Workflow
 
@@ -42,6 +63,8 @@ and edit there; the workspace copy then takes precedence.
 ```sh
 python3 <path-to-skill>/scripts/new_unit.py "Name of the thing" --type project --root .
 ```
+
+   If the kind does not exist, the script says which ones this workspace has.
 
    It creates the folder, seeds `README.md`, `STATUS.md` and `LOG.md` from the
    templates, and substitutes the name and today's date.

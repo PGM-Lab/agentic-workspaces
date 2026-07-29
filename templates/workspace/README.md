@@ -8,6 +8,14 @@ people.}
 **Storage:** {where this lives, and whether it is under version control}
 **Started:** {YYYY-MM-DD}
 
+## Why this shape
+
+{Three lines at most, written when the workspace is created. The what is in
+AGENTS.md; this is the why, and it is what nobody can reconstruct later.
+Example: "Organised by semester because teaching is seasonal. Student data is
+confidential and never leaves this tree. Course code lives in separate
+repositories."}
+
 ## Structure
 
 {Same folders as AGENTS.md, described for a reader rather than an agent.}

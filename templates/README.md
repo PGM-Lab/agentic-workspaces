@@ -18,8 +18,11 @@ is filled in by hand.
 The `new-unit` skill carries its own copy of `unit/` and `variants/`
 (flattened, with `unit/AGENTS.md` renamed to `unit_AGENTS.md`) so it works in
 a workspace that has no `resources/templates/` yet. The example workspace
-carries the same set. `tests/smoke.sh` fails if any of the three copies
-drift.
+carries the same set, and `setup-workspace` carries a copy of `workspace/`.
+`tests/smoke.sh` fails if any copy drifts.
+
+Which kinds of unit a workspace has is not a template question: it lives in
+the workspace at `resources/kinds.json`, and `new-unit` reads it from there.
 
 Delete placeholder lines that do not apply to a unit rather than leaving them
 empty. An empty field reads as missing information; a deleted one reads as not

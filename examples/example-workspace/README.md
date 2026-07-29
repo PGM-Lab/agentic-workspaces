@@ -11,6 +11,14 @@ Teaching is in a separate workspace.
 *This is an example workspace. Every person, project, grant and journal in it
 is invented.*
 
+## Why this shape
+
+Organised by kind of work rather than by year, because a paper and a
+consortium responsibility have completely different lifecycles. Manuscripts
+under review and partner data are confidential and never leave this tree.
+Manuscripts live in Overleaf and model code in git; this folder holds the
+private layer only.
+
 ## Structure
 
 - `projects/` — work with an end: papers, reports, deliverables.

@@ -2,16 +2,18 @@
 """Create a unit of work from the workspace templates.
 
 Seeds the README/STATUS/LOG contract so every unit starts the same shape.
-Edit KINDS below to match your workspace's top-level folders.
 
-Templates are looked up in <root>/resources/templates/ first. If the
-workspace has none, the copy bundled with this skill (../templates/) is used,
-so the skill works out of the box; copy that bundle into the workspace the
-day you want to customize it.
+The kinds of unit a workspace has are per workspace, not per machine, so they
+live in <root>/resources/kinds.json. Without that file the generic kinds below
+are used, which is what makes the skill work in a fresh workspace.
+
+Templates come from <root>/resources/templates/ when it exists, otherwise from
+the copy bundled with this skill.
 """
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 import unicodedata
@@ -19,24 +21,16 @@ from datetime import date
 from pathlib import Path
 
 SKILL_TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
+KINDS_FILE = "resources/kinds.json"
 
-# kind -> (top-level folder, README template in the templates directory)
-# EDIT THIS to match your workspace. See SKILL.md.
-KINDS = {
-    "project": ("projects", "project_README.md"),
-    "area": ("areas", "area_README.md"),
+# Used when the workspace has no kinds.json of its own. A real workspace
+# names its own kinds: papers, grants and reviews for research; semesters and
+# courses for teaching; clients and engagements for a consultancy.
+DEFAULT_KINDS = {
+    "project": {"folder": "projects", "readme": "project_README.md"},
+    "area": {"folder": "areas", "readme": "area_README.md"},
+    "person": {"folder": "people", "readme": "person_README.md", "note": True},
 }
-
-# Kinds that are a single note rather than a folder with the full contract.
-NOTE_KINDS = {
-    "person": ("people", "person_README.md"),
-}
-
-# kind -> subfolders to create instead of the default notes/
-SUBFOLDERS: dict[str, tuple[str, ...]] = {}
-
-# kind -> extra contract files, as (filename, template name)
-EXTRA_FILES: dict[str, tuple[tuple[str, str], ...]] = {}
 
 
 def slugify(value: str) -> str:
@@ -56,6 +50,23 @@ def fill(text: str, name: str, summary: str) -> str:
     return text
 
 
+def load_kinds(root: Path) -> dict:
+    """Read the workspace's kinds, falling back to the generic ones."""
+    path = root / KINDS_FILE
+    if not path.is_file():
+        return DEFAULT_KINDS
+    try:
+        kinds = json.loads(path.read_text())
+    except (OSError, ValueError) as exc:
+        sys.exit(f"Cannot read {path}: {exc}")
+    if not isinstance(kinds, dict) or not kinds:
+        sys.exit(f"{path} must be a non-empty object mapping kind -> settings")
+    for kind, spec in kinds.items():
+        if not isinstance(spec, dict) or "folder" not in spec or "readme" not in spec:
+            sys.exit(f"{path}: kind '{kind}' needs at least 'folder' and 'readme'")
+    return kinds
+
+
 def resolve_templates(root: Path, requested: str, default: str) -> Path:
     path = root / requested
     if path.is_dir():
@@ -71,8 +82,15 @@ def resolve_templates(root: Path, requested: str, default: str) -> Path:
 def main() -> int:
     default_templates = "resources/templates"
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("name", help="human-readable name of the unit")
-    p.add_argument("--type", default="project", choices=[*KINDS, *NOTE_KINDS])
+    p.add_argument(
+        "name", nargs="?", help="human-readable name of the unit"
+    )
+    p.add_argument(
+        "--type",
+        default="project",
+        help="kind of unit; the workspace's kinds come from "
+        f"{KINDS_FILE} (default: %(default)s)",
+    )
     p.add_argument("--summary", default="", help="one-line summary")
     p.add_argument("--root", default=".", help="workspace root (default: cwd)")
     p.add_argument(
@@ -81,11 +99,33 @@ def main() -> int:
         help="templates directory, relative to root (default: %(default)s, "
         "falling back to the skill's bundled templates)",
     )
+    p.add_argument(
+        "--list-kinds", action="store_true", help="print this workspace's kinds and exit"
+    )
     args = p.parse_args()
 
     root = Path(args.root).resolve()
     if not root.is_dir():
         sys.exit(f"Workspace root does not exist: {root}")
+    kinds = load_kinds(root)
+
+    if args.list_kinds:
+        source = KINDS_FILE if (root / KINDS_FILE).is_file() else "built-in defaults"
+        print(f"kinds from {source}:")
+        for kind, spec in sorted(kinds.items()):
+            shape = "single note" if spec.get("note") else "README/STATUS/LOG"
+            print(f"  {kind:<12} -> {spec['folder']}/  ({shape})")
+        return 0
+
+    if not args.name:
+        p.error("the following arguments are required: name")
+    if args.type not in kinds:
+        sys.exit(
+            f"Unknown kind '{args.type}'. This workspace has: "
+            f"{', '.join(sorted(kinds))}.\n"
+            f"Add a kind by editing {root / KINDS_FILE}."
+        )
+    spec = kinds[args.type]
     templates = resolve_templates(root, args.templates, default_templates)
 
     def read_template(name: str) -> str:
@@ -97,10 +137,9 @@ def main() -> int:
     slug = slugify(args.name)
 
     # Single-file kinds: one note, no contract.
-    if args.type in NOTE_KINDS:
-        folder, tpl = NOTE_KINDS[args.type]
-        content = fill(read_template(tpl), args.name, args.summary)
-        dest = root / folder / f"{slug}.md"
+    if spec.get("note"):
+        content = fill(read_template(spec["readme"]), args.name, args.summary)
+        dest = root / spec["folder"] / f"{slug}.md"
         if dest.exists():
             sys.exit(f"Already exists: {dest}")
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -108,16 +147,15 @@ def main() -> int:
         print(dest)
         return 0
 
-    folder, readme_tpl = KINDS[args.type]
-    base = root / folder / slug
+    base = root / spec["folder"] / slug
     if base.exists():
         sys.exit(f"Already exists: {base}")
 
     contract = [
-        ("README.md", readme_tpl),
+        ("README.md", spec["readme"]),
         ("STATUS.md", "STATUS.md"),
         ("LOG.md", "LOG.md"),
-        *EXTRA_FILES.get(args.type, ()),
+        *sorted(spec.get("extra", {}).items()),
     ]
     # Unit-level AGENTS.md is optional; seed it only if a template exists,
     # and delete it if the unit turns out to have no rules of its own.
@@ -132,7 +170,7 @@ def main() -> int:
         for filename, tpl in contract
     ]
 
-    for sub in SUBFOLDERS.get(args.type, ("notes",)):
+    for sub in spec.get("subfolders", ["notes"]):
         (base / sub).mkdir(parents=True)
     for filename, content in rendered:
         (base / filename).write_text(content)

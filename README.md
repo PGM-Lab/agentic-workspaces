@@ -53,23 +53,35 @@ practices it borrows from, is in [`docs/the-method.md`](docs/the-method.md).
 
 ## Getting started
 
+Clone this repository somewhere on local disk, open your agent inside the
+clone, and say:
+
+> Install these skills and set me up a workspace.
+
+That runs the `setup-workspace` skill: it installs the skills into your
+agent, asks three questions, and drafts the workspace for you to correct.
+Read [`docs/getting-started.md`](docs/getting-started.md) for what it will
+do and how to check it did it right.
+
 If you already have folders full of work, which is the normal case, read
-[`docs/adopting-existing-work.md`](docs/adopting-existing-work.md) first. It
-covers the part `getting-started.md` skips: surveying what you have, deciding
-what should never become a unit, and what can and cannot be recovered from
+[`docs/adopting-existing-work.md`](docs/adopting-existing-work.md) too. It
+covers the part setup does not: deciding what should never become a unit, in
+what order to activate the rest, and what can and cannot be recovered from
 material that is already there.
 
-To set up the mechanics, read
-[`docs/getting-started.md`](docs/getting-started.md). The short version:
-
-1. Pick one area of your work. Not all of it.
-2. Copy `templates/workspace/` to a new folder and fill in the `AGENTS.md`.
-3. Copy `skills/` into your agent's skills directory.
-4. Create one unit with the `new-unit` skill and use it for a week.
-5. Add a second workspace only once the first one has proven itself.
+Then read [`docs/the-method.md`](docs/the-method.md) before you rely on any
+of it. It is short, and an agent that has not read it will misuse the
+contract.
 
 Adopting this in one weekend across everything you do is the most common way
-to end up with forty folders full of unfilled templates. Start with one.
+to end up with forty folders full of unfilled templates. Start with one area
+of your work and let it prove itself.
+
+**Where things live.** The clone is not where you work: it is the source of
+the skills and the documentation. Your work lives in your own directories.
+Keep the clone on local disk, never inside a synced folder like Google Drive
+or Dropbox, because the installation uses symlinks and sync services do not
+carry them.
 
 ## What is in here
 

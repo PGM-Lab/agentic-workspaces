@@ -12,8 +12,13 @@ not a workspace itself.
 - `templates/` — the file contract, ready to copy. `workspace/` for the root
   of a new workspace, `unit/` for a unit of work, `variants/` for
   kind-specific README shapes.
-- `skills/` — the four structural skills, in the portable `SKILL.md` format.
+- `skills/` — the five structural skills, in the portable `SKILL.md` format.
+- `.claude/skills/` and `.agents/skills/` — relative symlinks to `skills/`,
+  so both Claude Code and Codex discover them in a fresh clone. Add an entry
+  in both whenever a skill is added.
 - `examples/` — one small fictional workspace, filled in, for reading.
+- `tests/smoke.sh` — walks the setup flow end to end and fails on template
+  drift. Also runs in CI on every push.
 
 ## Rules
 
@@ -25,6 +30,17 @@ not a workspace itself.
 - **Skills must not hardcode paths.** They take the workspace root as an
   argument or infer it. A skill that only works on one person's laptop does
   not belong here.
+- **Nothing that varies per workspace lives in a skill.** The skills are
+  installed once and shared by every workspace, so per-workspace settings go
+  in the workspace (`resources/kinds.json`, `resources/templates/`). Editing
+  an installed skill to suit one workspace silently breaks the others.
+- **Scripts that write are additive and idempotent.** Never overwrite a file
+  someone may have edited, never replace a skill that is already installed,
+  and append to config files rather than rewriting them. Users run these
+  against storage with no undo.
+- **A skill that drafts prose must not invent.** Write only what the user
+  said, and leave what you could not fill as a visible `{placeholder}` rather
+  than omitting it. An omitted section looks finished and passes every check.
 - **Documentation is in English**, including examples and template comments.
   One deliberate exception: skill descriptions and trigger examples mix in
   Spanish phrases, because triggers must match what the intended adopters

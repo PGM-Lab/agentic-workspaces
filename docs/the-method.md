@@ -1,8 +1,15 @@
 # The method
 
-This document explains the design and where each piece comes from. If you
-just want to set it up, read [`getting-started.md`](getting-started.md)
-instead.
+This document explains the design and where each piece comes from.
+
+**Read it before you set anything up, and make sure the agent helping you has
+read it too.** It is not background for the curious. The contract only works
+if both of you know that `STATUS.md` is overwritten and `LOG.md` is only ever
+appended to; an agent that has not been told will do the natural thing, which
+is the wrong thing, and within a month the files will be lying. Setup takes an
+hour. This takes ten minutes and is what makes the hour worth spending.
+
+Then see [`getting-started.md`](getting-started.md) for the mechanics.
 
 ## The problem
 
@@ -162,12 +169,20 @@ labels.
 
 ## The core skills
 
-Four skills operate the structure. Everything else you build will be domain
+Five skills operate the structure. Everything else you build will be domain
 work sitting on top.
+
+**`setup-workspace`** installs the kit and creates a workspace: three
+questions, then a drafted `AGENTS.md` you correct. It exists because a method
+about delegating to agents should be installable by one. It is the only skill
+here that runs once rather than continuously, so it is marked not to be
+invoked automatically and stays out of context the rest of the time.
 
 **`new-unit`** creates a unit from the right template. Its value is not saving
 keystrokes, it is that every unit starts with the contract already in place.
-Units created by hand are the ones that end up missing a `LOG.md`.
+Units created by hand are the ones that end up missing a `LOG.md`. The kinds
+of unit a workspace has live in the workspace, at `resources/kinds.json`,
+because kinds are per workspace while the skill is installed once.
 
 **`session-log`** closes a session: overwrite the touched `STATUS.md`, append a
 dated entry to the `LOG.md`. This is the write-back half of the loop and the
@@ -210,12 +225,19 @@ Cross-workspace skills can live in one git repository symlinked into each
 agent's skills directory, since those directories are local. Skills that live
 inside a synced workspace have to be real folders.
 
-**Not every agent auto-discovers local skills.** Claude Code loads skills from
-`.claude/skills/` automatically; other agents do not necessarily. The
-workaround is a `## Skills` section in the workspace `AGENTS.md` listing each
-skill with its path and its trigger, written so that an agent that cannot
-discover the skill can still be told to read and follow it. Every agent reads
-`AGENTS.md`, so it works as the bridge.
+**Each agent looks in its own place.** Claude Code loads skills from
+`~/.claude/skills/` and from `.claude/skills/` in the working directory and
+its parents; Codex uses `~/.agents/skills/` and `.agents/skills/`. One
+canonical copy in `~/.agents/skills/`, symlinked into Claude Code's
+directory, serves both. Symlinks are supported there and are what makes a
+single copy possible, which is another reason the skills cannot live in
+synced storage.
+
+**Not every agent auto-discovers skills at all.** For anything that is
+neither Claude Code nor Codex, the bridge is a `## Skills` section in the
+workspace `AGENTS.md` listing each skill with its path and its trigger,
+written so an agent can be told to read and follow it. Every agent reads
+`AGENTS.md`, so it works as the fallback.
 
 ## Known weaknesses
 

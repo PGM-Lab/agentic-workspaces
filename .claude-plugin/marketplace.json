@@ -1,0 +1,11 @@
+{
+  "name": "agentic-workspaces",
+  "owner": { "name": "Andrés R. Masegosa" },
+  "plugins": [
+    {
+      "name": "agentic-workspaces",
+      "source": "./",
+      "description": "Skills for setting up and running plain-text workspaces: setup-workspace, new-unit, session-log, workspace-overview, audit-workspace."
+    }
+  ]
+}

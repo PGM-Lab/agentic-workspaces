@@ -1,0 +1,6 @@
+{
+  "name": "agentic-workspaces",
+  "description": "Organize your work as plain text an AI agent can pick up: a README/STATUS/LOG contract per unit, AGENTS.md instructions, and the skills that operate them.",
+  "version": "0.1.0",
+  "author": { "name": "Andrés R. Masegosa" }
+}

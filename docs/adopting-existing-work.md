@@ -32,12 +32,25 @@ Expect a long stretch where most units are moved and few are activated. That
 is the normal state, not a failure. What matters is that you can tell which
 is which.
 
+## How this runs
+
+Same as the rest of the kit: you ask, a skill answers, and you check the
+result. The steps below say what to ask for, which skill responds, and what
+should exist afterwards.
+
+One rule throughout: **the agent never moves your files.** Moving is your
+decision, taken folder by folder. The agent surveys, proposes and drafts.
+
 ## Step 1: survey before you touch anything
 
-Run the audit against the tree as it stands:
+Say:
+
+> Audit this workspace and tell me what is not activated.
+
+That is `audit-workspace`. To run it yourself:
 
 ```bash
-python3 <path-to-skill>/audit-workspace/scripts/audit.py --root <workspace>
+python3 ~/.agents/skills/audit-workspace/scripts/audit.py --root <workspace>
 ```
 
 It sorts folders into three groups: units that already have a `STATUS.md`,
@@ -49,6 +62,8 @@ Treat the output as a first draft of an inventory, not as a verdict. Telling a
 unit from a container from a folder of loose notes cannot be done from
 filenames, and the script gets some of both wrong. Its value is that it gives
 you a list to argue with instead of a blank page.
+
+**Postcondition:** a list you have read, not a list you have acted on.
 
 ## Step 2: decide what is not a unit
 
@@ -76,6 +91,13 @@ Rule out, deliberately:
 A useful test: if you cannot write a `STATUS.md` for it with a real next
 action, it is not a unit. Notes and reference material fail that test, which
 is the point.
+
+Work through the survey with the agent, saying which of its lines are not
+units and why. That conversation is the valuable part, and it is yours: an
+agent cannot tell a dead project from a quiet one.
+
+**Postcondition:** every line of the survey is classified, including the ones
+you ruled out. Ruled out on purpose is a decision; unexamined is not.
 
 ## Step 3: classify the rest, including "I do not know"
 
@@ -142,6 +164,12 @@ one, because both you and the agent will believe it.
 So: let an agent draft the state, and write the next action yourself. If you
 cannot state one, that is information. Say so explicitly, or consider whether
 the unit is actually dormant.
+
+In practice, for each unit: ask the agent to read the folder and draft the
+`README.md` and the state line of `STATUS.md`, then write the next action
+yourself and correct what it got wrong. There is no skill for this yet, so
+say what you want explicitly. Never let it invent the next action, and never
+let it batch several units at once.
 
 **`LOG.md` is not recoverable at all.** Past decisions and their reasoning are
 not in the folder. They are in people's heads and in mail archives. Do not

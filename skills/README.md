@@ -1,46 +1,70 @@
 # Skills
 
-Four skills that operate the structure. Everything else you build on top will
+Five skills that operate the structure. Everything else you build on top will
 be domain work.
 
-| Skill | What it does | Edit before use |
+| Skill | What it does | When |
 |---|---|---|
-| `new-unit` | Creates a unit from the right template | Yes, the kinds list |
-| `session-log` | Closes a session: overwrite STATUS, append LOG | Usually not |
-| `workspace-overview` | Generates the pending board from STATUS files | Yes, the roots |
-| `audit-workspace` | Checks units against the contract | Usually not |
+| `setup-workspace` | Installs the kit and creates a workspace | Once per machine, once per workspace |
+| `new-unit` | Creates a unit from the right template | Whenever work has no folder yet |
+| `session-log` | Overwrites STATUS, appends to LOG | End of every working session |
+| `workspace-overview` | Generates the pending board from STATUS files | Weekly, or on demand |
+| `audit-workspace` | Checks the contract and surveys what is not activated | Occasionally, and while adopting |
 
 ## Installing
 
-Copy the skill folders into your agent's skills directory:
+Open your agent inside a clone of this repository and say "install these
+skills". It finds `setup-workspace` because the clone ships the skills where
+both Claude Code and Codex look, and runs it.
+
+To do it by hand:
 
 ```bash
-cp -r skills/*/ ~/.claude/skills/
+python3 skills/setup-workspace/scripts/setup_workspace.py --install
 ```
 
-Codex reads `~/.agents/skills/` natively. Both agents read the same
-`SKILL.md` format, so the same folder works in either.
+One canonical copy goes to `~/.agents/skills/`, which Codex reads natively,
+and is symlinked into `~/.claude/skills/`. One copy, both agents, and
+`git pull` in the clone updates everything.
 
-If you use more than one agent, keep the canonical copy in
-`~/.agents/skills/` on local disk and symlink it into the other agents'
-directories, rather than maintaining two versions. Symlinks do not survive
-cloud sync, so the canonical copy must not live in a synced folder.
+The install is additive: a skill of the same name that is already installed
+is left alone and reported, never overwritten. Add `--copy` on Windows, where
+symlinks need administrator rights, or if you plan to delete the clone.
+
+Claude Code users can instead install through the plugin marketplace, which
+handles versioning for them:
+
+```bash
+/plugin marketplace add PGM-Lab/agentic-workspaces
+```
+
+That route is Claude-only. If you use Codex as well, prefer the canonical
+copy above so you do not end up maintaining two divergent installations.
+
+**The clone must live on local disk**, not in Google Drive or another synced
+folder: sync services do not carry symlinks.
 
 ## Global versus workspace-local
 
-A skill that applies across all your work goes in the agent's skills
-directory, as above. A skill that only makes sense inside one workspace goes
-in that workspace, at `.claude/skills/<name>/`, as a real folder.
+These five are cross-workspace and belong in the agent's skills directory. A
+skill that only makes sense inside one workspace goes in that workspace at
+`.claude/skills/<name>/`, as a real folder.
 
 Claude Code discovers workspace-local skills automatically. Other agents do
 not. The bridge is a `## Skills` section in the workspace `AGENTS.md` listing
-each skill with its path and its trigger, phrased so that any agent can be
-told to read and follow the file. Every agent reads `AGENTS.md`.
+each skill with its path and its trigger, phrased so any agent can be told to
+read and follow the file.
 
-## Before you use these
+## What is configured where
 
-`new-unit` ships with generic kinds (`project`, `area`, `person`) and with a
-bundled copy of the unit templates, used whenever the workspace has no
-`resources/templates/` of its own. `workspace-overview` ships with no roots
-configured. Both say so at the top of their `SKILL.md`. Edit them to match
-your setup; they are meant to be adapted, not used as-is.
+Nothing here should be edited to suit one workspace. The two things that vary
+live in the workspace itself:
+
+- `resources/kinds.json` — the kinds of unit this workspace has. Editing the
+  installed `new-unit` instead would break every other workspace.
+- `resources/templates/` — the workspace's own templates, if it wants any.
+  Without them, `new-unit` uses the copy bundled with the skill.
+
+The one exception is `workspace-overview`, which needs to know which
+workspaces exist: `setup-workspace` appends each new one to its `roots.txt`,
+and never rewrites the file.

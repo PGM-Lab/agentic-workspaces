@@ -35,6 +35,53 @@ SKIP = {
 
 PLACEHOLDER = re.compile(r"\{[^{}]{0,300}\}")
 TODO = re.compile(r"\bTODO\b")
+HEADING = re.compile(r"^(#{2,})\s+(.*?)\s*$")
+
+
+def audit_workspace_agents(root: Path) -> dict:
+    """Check the workspace's own AGENTS.md, which no other check looks at.
+
+    It is the file the setup guide calls the only one that genuinely needs
+    thought, and the only place the confidentiality rules exist.
+
+    Only language-independent checks are made: whether the file is there,
+    whether a section was left with no body, and whether placeholders survive.
+    Whether a *needed* section is absent altogether cannot be detected, since
+    workspaces are written in the author's own language. That is why the
+    setup skill must leave an explicit placeholder rather than omitting a
+    section it could not fill.
+    """
+    path = root / "AGENTS.md"
+    empty_result = {"present": False, "placeholders": 0, "empty_sections": []}
+    if not path.exists():
+        return empty_result
+    try:
+        text = path.read_text(errors="replace")
+    except OSError:
+        return empty_result
+
+    # Split on level-2+ headings and find the ones with no body.
+    sections: list = []
+    current = None
+    for line in text.splitlines():
+        m = HEADING.match(line)
+        if m:
+            current = (m.group(2), [])
+            sections.append(current)
+        elif current is not None:
+            current[1].append(line)
+
+    empty = [
+        title
+        for title, body in sections
+        if not any(l.strip() and not l.strip().startswith("<!--") for l in body)
+    ]
+
+    return {
+        "present": True,
+        "placeholders": len(PLACEHOLDER.findall(text)),
+        "empty_sections": empty,
+    }
 
 
 def candidate_dirs(root: Path):
@@ -208,6 +255,7 @@ def main() -> int:
     results = [audit_unit(u, root, args.stale_days) for u in units]
     candidate_names = [str(c.relative_to(root)) for c in candidates]
     not_started_names = [str(d.relative_to(root)) for d in not_started]
+    agents = audit_workspace_agents(root)
 
     if args.as_json:
         print(
@@ -217,11 +265,26 @@ def main() -> int:
                     "units": results,
                     "candidates": candidate_names,
                     "not_started": not_started_names,
+                    "workspace_agents_md": agents,
                 },
                 indent=2,
             )
         )
         return 0
+
+    # The workspace AGENTS.md goes first: it governs everything below it.
+    if not agents["present"]:
+        print("AGENTS.md: missing at the workspace root. Agents working here")
+        print("have no rules, no structure and no confidentiality boundaries.\n")
+    else:
+        problems = []
+        if agents["empty_sections"]:
+            problems.append("empty sections: " + ", ".join(agents["empty_sections"]))
+        if agents["placeholders"]:
+            problems.append(f"{agents['placeholders']} unfilled placeholder(s)")
+        if problems:
+            print("AGENTS.md (workspace root): " + "; ".join(problems))
+            print("This is the file that tells an agent what it may not do.\n")
 
     flagged = [r for r in results if not r["complete"] or r["stale_days"]]
     complete = sum(1 for r in results if r["complete"])
