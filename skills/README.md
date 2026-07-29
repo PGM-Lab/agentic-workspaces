@@ -20,39 +20,19 @@ writes them itself.
 ## Installing
 
 Open your agent inside a clone of this repository and say "install these
-skills". It finds `setup-workspace` because the clone ships the skills where
-both Claude Code and Codex look, and runs it.
-
-To do it by hand:
+skills", or run the installer yourself:
 
 ```bash
 python3 skills/setup-workspace/scripts/setup_workspace.py --install
 ```
 
-One canonical copy goes to `~/.agents/skills/`, which Codex reads natively,
-and is symlinked into `~/.claude/skills/`. One copy, both agents, and
-`git pull` in the clone updates everything.
-
-The install is additive: a skill of the same name that is already installed
-is left alone and reported, never overwritten. Add `--copy` on Windows, where
-symlinks need administrator rights, or if you plan to delete the clone.
-
-Claude Code users can instead install through the plugin marketplace, which
-handles versioning for them:
-
-```bash
-/plugin marketplace add PGM-Lab/agentic-workspaces
-```
-
-That route is Claude-only. If you use Codex as well, prefer the canonical
-copy above so you do not end up maintaining two divergent installations.
-
-**The clone must live on local disk**, not in Google Drive or another synced
-folder: sync services do not carry symlinks.
+[`../docs/getting-started.md`](../docs/getting-started.md#1-install) has the
+rest in one place: where the copies go, why the clone must live on local disk,
+the `--copy` variant, the plugin route for Claude Code, and how to update.
 
 ## Global versus workspace-local
 
-These five are cross-workspace and belong in the agent's skills directory. A
+These six are cross-workspace and belong in the agent's skills directory. A
 skill that only makes sense inside one workspace goes in that workspace at
 `.claude/skills/<name>/`, as a real folder.
 

@@ -5,7 +5,7 @@
     {
       "name": "agentic-workspaces",
       "source": "./",
-      "description": "Skills for setting up and running plain-text workspaces: setup-workspace, new-unit, session-log, workspace-overview, audit-workspace."
+      "description": "Skills for setting up and running plain-text workspaces: setup-workspace, new-unit, activate, session-log, workspace-overview, audit-workspace."
     }
   ]
 }

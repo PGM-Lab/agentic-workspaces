@@ -96,7 +96,7 @@ right template" and "close the session by updating STATUS and LOG" are
 procedures you would otherwise retype, or worse, rely on the agent to
 improvise.
 
-The four that operate the structure itself are described below, and shipped in
+The six that operate the structure itself are described below, and shipped in
 [`../skills/`](../skills/).
 
 ### Derived views, never a second list

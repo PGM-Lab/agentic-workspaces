@@ -54,6 +54,17 @@ do not follow a `git pull`, so they are updated with `--update` instead.
 **Postconditions:** `~/.agents/skills/` contains the kit's skills, and your
 agent lists them. Ask it "what skills do you have?" to check.
 
+*Using Claude Code and nothing else?* There is a plugin route instead, which
+handles versioning for you:
+
+```bash
+/plugin marketplace add PGM-Lab/agentic-workspaces
+```
+
+It is Claude-only, and it puts the skills somewhere else, so the postcondition
+above does not apply; ask the agent what skills it has. If you use Codex too,
+prefer the canonical copy or you will maintain two divergent installations.
+
 *Using an agent that is neither Claude Code nor Codex?* The skills are plain
 `SKILL.md` folders following the open standard, so they work anywhere. Put
 them where your agent looks, and list them in your workspace `AGENTS.md`

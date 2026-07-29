@@ -60,30 +60,26 @@ clone, and say:
 
 That runs the `setup-workspace` skill: it installs the skills into your
 agent, asks three questions, and drafts the workspace for you to correct.
-Read [`docs/getting-started.md`](docs/getting-started.md) for what it will
-do and how to check it did it right.
 
-If you already have folders full of work, which is the normal case, read
-[`docs/adopting-existing-work.md`](docs/adopting-existing-work.md) too. It
-covers the part setup does not: deciding what should never become a unit, in
-what order to activate the rest, and what can and cannot be recovered from
-material that is already there.
-
-Then read [`docs/the-method.md`](docs/the-method.md) before you rely on any
-of it. It is short, and an agent that has not read it will misuse the
-contract.
+Read in this order: [`docs/the-method.md`](docs/the-method.md) for why the
+contract is shaped the way it is, ten minutes, and an agent that has not read
+it will misuse the contract; [`examples/`](examples/) for one filled-in
+workspace; then [`docs/getting-started.md`](docs/getting-started.md) to set up
+and check it worked. If you already have folders full of work, which is the
+normal case, [`docs/adopting-existing-work.md`](docs/adopting-existing-work.md)
+covers what setup does not: what should never become a unit, in what order to
+activate the rest, and what cannot be recovered from what is already there.
 
 Adopting this in one weekend across everything you do is the most common way
 to end up with forty folders full of unfilled templates. Start with one area
 of your work and let it prove itself.
 
 **Where things live.** The clone is not where you work: it is the source of
-the skills and the documentation. Your work lives in your own directories.
-Keep the clone on local disk, never inside a synced folder like Google Drive
-or Dropbox, because the default installation symlinks into the clone and sync
-services do not carry symlinks. Installing with `--copy` instead makes real
-copies that no longer need the clone, at the price of updating them with
-`--update` rather than a `git pull`.
+the skills and the documentation. Keep it on local disk, never inside a synced
+folder like Google Drive or Dropbox, because the install symlinks into the
+clone and sync services do not carry symlinks.
+[`docs/getting-started.md`](docs/getting-started.md#1-install) covers the
+`--copy` install for when that is not possible.
 
 ## What is in here
 
@@ -91,7 +87,7 @@ copies that no longer need the clone, at the price of updating them with
 docs/          The method and the rationale, a setup guide, and how to
                adopt it over work that already exists
 templates/     Every file in the contract, ready to copy
-skills/        The four skills that operate the structure
+skills/        The six skills that operate the structure
 examples/      A small worked workspace, filled in, to read before you start
 tests/         A smoke test that walks the setup guide end to end
 ```

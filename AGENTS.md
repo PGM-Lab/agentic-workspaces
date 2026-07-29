@@ -13,9 +13,9 @@ not a workspace itself.
   of a new workspace, `unit/` for a unit of work, `variants/` for
   kind-specific README shapes.
 - `skills/` — the six structural skills, in the portable `SKILL.md` format.
-- `.claude/skills/` and `.agents/skills/` — relative symlinks to `skills/`,
-  so both Claude Code and Codex discover them in a fresh clone. Add an entry
-  in both whenever a skill is added.
+- `.claude/skills/` and `.agents/skills/` — one relative symlink per skill,
+  pointing into `skills/`, so both Claude Code and Codex discover them in a
+  fresh clone. Add an entry in both whenever a skill is added.
 - `examples/` — one small fictional workspace, filled in, for reading.
 - `tests/smoke.sh` — walks the setup flow end to end and fails on template
   drift. Also runs in CI on every push.
