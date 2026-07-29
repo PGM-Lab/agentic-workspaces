@@ -34,6 +34,19 @@ SKIP = {
 }
 
 PLACEHOLDER = re.compile(r"\{[^{}]{0,300}\}")
+FENCED = re.compile(r"^```.*?^```", re.M | re.S)
+INLINE_CODE = re.compile(r"`[^`\n]*`")
+
+
+def prose_only(text: str) -> str:
+    """Drop code spans and fenced blocks before looking for leftovers.
+
+    A file that talks about templates quotes their placeholders, and a LOG
+    that records a decision about one is full of them. Written as code, as
+    Markdown wants, they are documentation rather than an unfilled field.
+    A genuinely unfilled template still reads as prose and is still caught.
+    """
+    return INLINE_CODE.sub("", FENCED.sub("", text))
 TODO = re.compile(r"\bTODO\b")
 HEADING = re.compile(r"^(#{2,})\s+(.*?)\s*$")
 
@@ -84,7 +97,7 @@ def audit_workspace_agents(root: Path) -> dict:
 
     return {
         "present": True,
-        "placeholders": len(PLACEHOLDER.findall(text)),
+        "placeholders": len(PLACEHOLDER.findall(prose_only(text))),
         "empty_sections": empty,
         # The one section whose heading is fixed English by convention,
         # because a skill outside the workspace has to find it by name. Its
@@ -227,9 +240,10 @@ def audit_unit(unit: Path, root: Path, stale_days: int) -> dict:
             text = f.read_text(errors="replace")
         except OSError:
             continue
-        if PLACEHOLDER.search(text):
+        prose = prose_only(text)
+        if PLACEHOLDER.search(prose):
             placeholders.append(name)
-        if TODO.search(text):
+        if TODO.search(prose):
             todos.append(name)
 
     status = unit / "STATUS.md"

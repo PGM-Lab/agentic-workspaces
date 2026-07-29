@@ -281,4 +281,25 @@ python3 "$repo/skills/setup-workspace/scripts/setup_workspace.py" --install --co
 [ -L "$linked/.agents/skills/new-unit" ] && fail "--copy --update did not migrate off symlinks"
 [ -f "$linked/.agents/skills/new-unit/SKILL.md" ] || fail "the migration lost the skill"
 
+# 18. A placeholder quoted as code is documentation, not an unfilled field.
+#     A LOG that records a decision about a template is full of them, and
+#     every one of them used to read as an incomplete unit. Its own workspace,
+#     so the counts the earlier checks rely on stay put.
+docs="$tmp/docs-ws"
+python3 "$repo/skills/setup-workspace/scripts/setup_workspace.py" \
+  --workspace "$docs" --name Docs --overview-roots none >/dev/null
+unit="$docs/projects/documented"
+mkdir -p "$unit"
+printf '# Documented\n\nA README with nothing left to fill.\n' > "$unit/README.md"
+printf '# Status\n\nState: fine. Next action: none.\n' > "$unit/STATUS.md"
+printf '# Log\n\n## 2026-01-01\nRenamed `{Project name}` to `{Unit name}`, dropped `TODO.md`.\n' \
+  > "$unit/LOG.md"
+python3 "$repo/skills/audit-workspace/scripts/audit.py" --root "$docs" \
+  | grep -q "projects/documented" \
+  && fail "a placeholder quoted as code was read as an unfilled one"
+printf '\nAnd a real gap: {Summary}\n' >> "$unit/README.md"
+python3 "$repo/skills/audit-workspace/scripts/audit.py" --root "$docs" \
+  | grep -q "projects/documented" \
+  || fail "a genuinely unfilled placeholder stopped being reported"
+
 echo "smoke OK"
